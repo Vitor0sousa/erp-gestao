@@ -1,0 +1,206 @@
+.dashboard-layout {
+  display: flex;
+  height: 100vh;
+  background-color: #f3f4f6;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+  overflow: hidden;
+}
+
+.sidebar {
+  width: 260px;
+  background-color: #0f172a;
+  color: white;
+  display: flex;
+  flex-direction: column;
+}
+
+.sidebar-header {
+  height: 64px;
+  display: flex;
+  align-items: center;
+  padding: 0 1.5rem;
+  border-bottom: 1px solid #1e293b;
+}
+
+.logo-icon {
+  width: 32px;
+  height: 32px;
+  color: #3b82f6;
+  margin-right: 0.75rem;
+}
+
+.sidebar-header h2 { font-size: 1.1rem; font-weight: 700; letter-spacing: 1px; margin: 0; }
+
+.sidebar-nav { flex: 1; padding: 1.5rem 1rem; display: flex; flex-direction: column; gap: 0.5rem; }
+
+.nav-item { display: flex; align-items: center; padding: 0.75rem 1rem; color: #cbd5e1; text-decoration: none; border-radius: 8px; font-size: 0.95rem; transition: all 0.2s; }
+.nav-item svg { width: 20px; height: 20px; margin-right: 0.75rem; }
+.nav-item:hover { background-color: #1e293b; color: white; }
+.nav-item.active { background-color: #2563eb; color: white; }
+
+.sidebar-footer { padding: 1rem; border-top: 1px solid #1e293b; }
+.btn-logout { display: flex; align-items: center; width: 100%; padding: 0.75rem 1rem; background: transparent; border: none; color: #94a3b8; cursor: pointer; border-radius: 8px; font-size: 0.95rem; transition: color 0.2s; }
+.btn-logout svg { width: 20px; height: 20px; margin-right: 0.75rem; }
+.btn-logout:hover { color: white; }
+
+/* Área Principal */
+.main-content { flex: 1; display: flex; flex-direction: column; overflow-y: auto; }
+.topbar { height: 64px; background-color: white; border-bottom: 1px solid #e5e7eb; display: flex; align-items: center; justify-content: space-between; padding: 0 2rem; }
+.topbar h1 { font-size: 1.25rem; font-weight: 600; color: #1f2937; margin: 0; }
+.user-profile { display: flex; align-items: center; gap: 1rem; color: #6b7280; font-size: 0.875rem; }
+.avatar { width: 32px; height: 32px; background-color: #dbeafe; color: #1d4ed8; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; }
+.content-area { padding: 2rem; }
+
+/* Barra de Ações */
+.action-bar { display: flex; justify-content: space-between; margin-bottom: 1.5rem; }
+.search-box { position: relative; width: 350px; }
+.search-box svg { position: absolute; left: 12px; top: 10px; width: 20px; height: 20px; color: #9ca3af; }
+.search-box input { width: 100%; padding: 0.6rem 1rem 0.6rem 2.5rem; border: 1px solid #d1d5db; border-radius: 8px; outline: none; font-size: 0.95rem; box-sizing: border-box; }
+.search-box input:focus { border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1); }
+.btn-new { display: flex; align-items: center; background-color: #2563eb; color: white; border: none; padding: 0 1.2rem; border-radius: 8px; font-weight: 500; cursor: pointer; }
+.btn-new svg { width: 20px; height: 20px; margin-right: 0.5rem; }
+.btn-new:hover { background-color: #1d4ed8; }
+
+/* Tabela (Card) */
+.card-table { background-color: white; border-radius: 12px; box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1); overflow: hidden; border: 1px solid #e5e7eb; }
+.data-table { width: 100%; border-collapse: collapse; }
+.data-table th { background-color: #f9fafb; padding: 1rem; text-align: left; font-size: 0.75rem; text-transform: uppercase; color: #6b7280; font-weight: 600; border-bottom: 1px solid #e5e7eb; }
+.data-table td { padding: 1rem; border-bottom: 1px solid #e5e7eb; color: #374151; font-size: 0.95rem; }
+.data-table tbody tr:hover { background-color: #f9fafb; }
+
+/* Utilitários da Tabela */
+.text-right { text-align: right; }
+.text-center { text-align: center; }
+.font-mono { font-family: monospace; color: #4b5563; }
+.font-bold { font-weight: 500; color: #111827; }
+.font-number { font-weight: 600; font-size: 1rem; }
+.text-red { color: #dc2626; }
+.badge { background-color: #e0e7ff; color: #4338ca; padding: 0.25rem 0.6rem; border-radius: 999px; font-size: 0.75rem; font-weight: 600; }
+.badge-kit { background-color: #fce7f3; color: #be185d; }
+.btn-icon { background: transparent; border: none; color: #6b7280; cursor: pointer; padding: 0.4rem; border-radius: 6px; }
+.btn-icon:hover { background-color: #f3f4f6; color: #111827; }
+.btn-icon svg { width: 20px; height: 20px; }
+.loading-state, .error-state, .empty-state { padding: 4rem; text-align: center; color: #6b7280; }
+.error-state { color: #dc2626; }
+
+
+/* ========================================= */
+/* ESTILOS DO MODAL (ATUALIZADO)             */
+/* ========================================= */
+
+.modal-overlay {
+  position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+  background-color: rgba(15, 23, 42, 0.6);
+  display: flex; justify-content: center; align-items: center;
+  z-index: 1000; backdrop-filter: blur(2px);
+}
+
+.modal-card {
+  background-color: white;
+  width: 100%;
+  border-radius: 12px;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  display: flex; flex-direction: column;
+}
+
+/* NOVA CLASSE: Torna o modal gigante e elegante */
+.modal-large { max-width: 850px; }
+
+.modal-header { padding: 1.5rem; border-bottom: 1px solid #e5e7eb; display: flex; justify-content: space-between; align-items: center; }
+.modal-header h3 { margin: 0; font-size: 1.25rem; color: #111827; }
+.btn-close { background: transparent; border: none; font-size: 1.5rem; line-height: 1; color: #9ca3af; cursor: pointer; }
+.btn-close:hover { color: #111827; }
+
+.modal-body { padding: 1.5rem; display: flex; flex-direction: column; gap: 1.5rem; }
+.scroll-y { max-height: 75vh; overflow-y: auto; }
+
+/* NOVO: Sistema de Grid para o Formulário */
+.modal-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.2rem;
+}
+
+.span-2 { grid-column: span 2; }
+.span-3 { grid-column: span 3; }
+
+.form-group label { display: block; font-size: 0.875rem; font-weight: 500; color: #374151; margin-bottom: 0.4rem; }
+.form-group input, .form-group select { width: 100%; padding: 0.6rem; border: 1px solid #d1d5db; border-radius: 6px; font-size: 0.95rem; box-sizing: border-box; }
+.form-group input:disabled, .form-group select:disabled { background-color: #f3f4f6; color: #9ca3af; cursor: not-allowed; }
+.input-estoque { font-size: 1.15rem !important; font-weight: bold; color: #1d4ed8; }
+
+/* Info Box para mensagens (ex: O estoque do kit é automático) */
+.info-box {
+  display: flex; align-items: center;
+  background-color: #f8fafc;
+  border: 1px dashed #94a3b8;
+  padding: 0.75rem 1rem;
+  border-radius: 6px; color: #475569; font-size: 0.85rem; height: 100%; box-sizing: border-box;
+}
+.info-icon { width: 20px; height: 20px; margin-right: 0.5rem; color: #64748b; }
+
+.modal-footer { padding: 1.5rem; border-top: 1px solid #e5e7eb; display: flex; justify-content: flex-end; gap: 1rem; background-color: #f9fafb; border-bottom-left-radius: 12px; border-bottom-right-radius: 12px; }
+.btn-secondary { background-color: white; border: 1px solid #d1d5db; color: #374151; padding: 0.6rem 1.2rem; border-radius: 6px; font-weight: 500; cursor: pointer; }
+.btn-secondary:hover { background-color: #f3f4f6; }
+.btn-primary { background-color: #2563eb; color: white; border: none; padding: 0.6rem 1.8rem; border-radius: 6px; font-weight: 500; cursor: pointer; transition: 0.2s; }
+.btn-primary:hover:not(:disabled) { background-color: #1d4ed8; }
+.btn-primary:disabled { opacity: 0.6; cursor: not-allowed; }
+
+/* ========================================= */
+/* ÁREA DA COMPOSIÇÃO DO KIT                 */
+/* ========================================= */
+
+.kit-section { padding-top: 1.5rem; border-top: 2px dashed #e5e7eb; }
+.kit-header-title h4 { margin: 0; font-size: 1.1rem; color: #111827; }
+.kit-header-title p { margin: 0 0 1rem 0; font-size: 0.85rem; color: #6b7280; }
+
+.add-item-box { background-color: #f8fafc; padding: 1.2rem; border-radius: 8px; border: 1px solid #e2e8f0; margin-bottom: 1.5rem; }
+
+.autocomplete-container { position: relative; width: 100%; }
+.search-input { width: 100%; padding: 0.85rem 1rem; border: 2px solid #cbd5e1; border-radius: 6px; font-size: 1rem; box-sizing: border-box; transition: border-color 0.2s; }
+.search-input:focus { border-color: #3b82f6; outline: none; }
+
+.autocomplete-dropdown { position: absolute; top: 100%; left: 0; width: 100%; background: white; border: 1px solid #cbd5e1; border-radius: 6px; margin-top: 4px; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); z-index: 50; max-height: 250px; overflow-y: auto; list-style: none; padding: 0; }
+.autocomplete-item { padding: 0.85rem 1rem; border-bottom: 1px solid #f1f5f9; cursor: pointer; display: flex; justify-content: space-between; align-items: center; transition: background-color 0.15s; }
+.autocomplete-item:last-child { border-bottom: none; }
+.autocomplete-item:hover { background-color: #eff6ff; }
+.autocomplete-item .item-info { font-size: 0.95rem; color: #333; }
+.autocomplete-item .item-stock { font-size: 0.85rem; color: #059669; font-weight: 600; }
+.autocomplete-item .low-stock { color: #dc2626; }
+
+.selected-product-box { display: flex; justify-content: space-between; align-items: center; background-color: #eff6ff; border: 1px solid #bfdbfe; padding: 1rem; border-radius: 6px; margin-bottom: 1rem; }
+.selected-info { display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; }
+.selected-sku { font-weight: 700; color: #1e40af; font-size: 1rem;}
+.selected-name { font-size: 0.95rem; color: #1e3a8a; }
+.selected-stock { font-size: 0.85rem; background: #dbeafe; padding: 0.3rem 0.6rem; border-radius: 4px; color: #1d4ed8; font-weight: bold;}
+
+.btn-trocar { background: transparent; border: none; color: #ef4444; font-size: 0.85rem; cursor: pointer; text-decoration: underline; font-weight: 500;}
+.btn-trocar:hover { color: #b91c1c; }
+
+.qtd-add-row { display: flex; gap: 1rem; align-items: flex-end; }
+.qtd-input { width: 120px !important; font-weight: bold; text-align: center; font-size: 1.1rem !important;}
+.btn-add-item { background-color: #10b981; color: white; border: none; padding: 0.7rem 1.5rem; border-radius: 6px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background-color 0.2s; }
+.btn-add-item svg { width: 20px; height: 20px; margin-right: 0.5rem; }
+.btn-add-item:hover { background-color: #059669; }
+
+.list-title { margin: 0 0 0.75rem 0; font-size: 0.9rem; color: #4b5563; text-transform: uppercase; letter-spacing: 0.5px; }
+
+/* Grid para a lista de itens da receita (Fica mais limpo em pop-ups grandes) */
+.kit-grid-items { display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 1rem; }
+
+.kit-item-row { display: flex; align-items: center; padding: 0.85rem 1rem; background-color: white; border: 1px solid #e5e7eb; border-radius: 6px; box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05); }
+.item-qtd { font-weight: 700; color: #2563eb; background-color: #eff6ff; padding: 0.4rem 0.8rem; border-radius: 4px; margin-right: 1rem; font-size: 1.1rem; }
+.item-nome-box { flex: 1; display: flex; flex-direction: column; }
+.item-nome { font-size: 0.95rem; color: #374151; font-weight: 600; }
+.item-sub-stock { font-size: 0.8rem; color: #059669; margin-top: 0.2rem; }
+.item-sub-stock.low-stock { color: #dc2626; font-weight: 500; }
+
+.btn-remove-item { background: transparent; border: none; color: #ef4444; cursor: pointer; padding: 0.4rem; border-radius: 4px; display: flex; align-items: center; justify-content: center;}
+.btn-remove-item svg { width: 22px; height: 22px; }
+.btn-remove-item:hover { background-color: #fef2f2; color: #b91c1c; }
+
+.empty-kit { text-align: center; padding: 2rem; color: #9ca3af; font-size: 0.95rem; border: 1px dashed #cbd5e1; border-radius: 6px; background-color: #f8fafc; }
+
+/* Exibição do Cálculo na Tabela Principal */
+.kit-stock-calc { font-weight: bold; color: #2563eb; font-size: 1.1rem; }
+.kit-stock-calc small { font-size: 0.7rem; color: #6b7280; font-weight: normal; margin-left: 2px; }
