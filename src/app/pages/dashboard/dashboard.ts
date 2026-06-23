@@ -12,6 +12,7 @@ interface ProdutoInterno {
   tipo: 'SIMPLES' | 'KIT';
   estoque_fisico: number;
   estoque_calculado?: number;
+  foto_url?: string;
 }
 
 interface ComposicaoItem {
@@ -21,18 +22,24 @@ interface ComposicaoItem {
   estoque_atual: number;
 }
 
+// ─── Cloudinary config ───────────────────────────────────────────────────────
+
+// ─────────────────────────────────────────────────────────────────────────────
+
 @Component({
   selector: 'app-dashboard',
   standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './dashboard.html',
   styleUrl: './dashboard.css'
+  
 })
 export class DashboardComponent implements OnInit {
   produtos = signal<ProdutoInterno[]>([]);
   isLoading = signal(true);
   errorMessage = signal('');
-
+  private readonly cloudinaryUrl = environment.cloudinaryUploadUrl;
+  private readonly cloudinaryPreset = environment.cloudinaryUploadPreset;
   produtosSimples = computed(() => this.produtos().filter(p => p.tipo === 'SIMPLES'));
 
   isModalOpen = signal(false);
@@ -45,17 +52,23 @@ export class DashboardComponent implements OnInit {
   formTipo = signal<'SIMPLES' | 'KIT'>('SIMPLES');
   formEstoque = signal<number>(0);
 
+  // ── Foto / Cloudinary ──────────────────────────────────────────────────────
+  formFotoUrl = signal<string>('');
+  fotoPreviewUrl = signal<string>('');
+  isUploadingFoto = signal(false);
+  uploadErro = signal('');
+  // ──────────────────────────────────────────────────────────────────────────
+
   composicaoAtual = signal<ComposicaoItem[]>([]);
-  buscaItem = signal(''); 
+  buscaItem = signal('');
   produtoSelecionadoParaKit = signal<ProdutoInterno | null>(null);
   itemAdicionarQtd = signal<number>(1);
 
   resultadosBusca = computed(() => {
     const termo = this.buscaItem().toLowerCase().trim();
     if (!termo) return [];
-    
-    return this.produtosSimples().filter(p => 
-      p.sku_interno.toLowerCase().includes(termo) || 
+    return this.produtosSimples().filter(p =>
+      p.sku_interno.toLowerCase().includes(termo) ||
       p.nome_produto.toLowerCase().includes(termo)
     ).slice(0, 8);
   });
@@ -95,22 +108,19 @@ export class DashboardComponent implements OnInit {
       const prodsFinal = (prods || []).map(p => {
         if (p.tipo === 'KIT') {
           const itensDesteKit = (composicoes || []).filter(c => c.sku_kit_id === p.id);
-          
+
           if (itensDesteKit.length === 0) {
             p.estoque_calculado = 0;
           } else {
             let maxKitsPossiveis = Infinity;
-            
             itensDesteKit.forEach(itemDaReceita => {
               const prodSimples = prods.find(ps => ps.id === itemDaReceita.sku_simples_id);
               const estoqueAtual = prodSimples ? prodSimples.estoque_fisico : 0;
               const quantosKitsDaParaFazer = Math.floor(estoqueAtual / itemDaReceita.quantidade_necessaria);
-              
               if (quantosKitsDaParaFazer < maxKitsPossiveis) {
                 maxKitsPossiveis = quantosKitsDaParaFazer;
               }
             });
-            
             p.estoque_calculado = maxKitsPossiveis === Infinity ? 0 : maxKitsPossiveis;
           }
         }
@@ -133,10 +143,9 @@ export class DashboardComponent implements OnInit {
     this.formNome.set('');
     this.formTipo.set('SIMPLES');
     this.formEstoque.set(0);
-    
+    this.resetarFoto();
     this.resetarBuscaComposicao();
     this.composicaoAtual.set([]);
-    
     this.isModalOpen.set(true);
   }
 
@@ -147,7 +156,12 @@ export class DashboardComponent implements OnInit {
     this.formNome.set(produto.nome_produto);
     this.formTipo.set(produto.tipo || 'SIMPLES');
     this.formEstoque.set(produto.estoque_fisico || 0);
-    
+
+    // Carrega foto existente
+    this.formFotoUrl.set(produto.foto_url || '');
+    this.fotoPreviewUrl.set(produto.foto_url || '');
+    this.uploadErro.set('');
+
     this.resetarBuscaComposicao();
     this.composicaoAtual.set([]);
 
@@ -178,6 +192,74 @@ export class DashboardComponent implements OnInit {
     this.isModalOpen.set(false);
   }
 
+  // ── Upload de foto para Cloudinary ─────────────────────────────────────────
+  resetarFoto() {
+    this.formFotoUrl.set('');
+    this.fotoPreviewUrl.set('');
+    this.uploadErro.set('');
+    this.isUploadingFoto.set(false);
+  }
+
+  async onFotoSelecionada(event: Event) {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    if (!file) return;
+
+    // Validações básicas
+    if (!file.type.startsWith('image/')) {
+      this.uploadErro.set('Apenas imagens são permitidas (JPG, PNG, WEBP).');
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      this.uploadErro.set('A imagem deve ter no máximo 5MB.');
+      return;
+    }
+
+    // Preview local imediato
+    const reader = new FileReader();
+    reader.onload = (e) => this.fotoPreviewUrl.set(e.target?.result as string);
+    reader.readAsDataURL(file);
+
+    // Upload para Cloudinary
+    this.isUploadingFoto.set(true);
+    this.uploadErro.set('');
+    this.formFotoUrl.set('');
+
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('upload_preset', this.cloudinaryPreset);
+      formData.append('folder', 'produtos');
+
+      const response = await fetch(this.cloudinaryUrl, {
+        method: 'POST',
+        body: formData
+      });
+
+      if (!response.ok) {
+        throw new Error(`Erro no upload: ${response.statusText}`);
+      }
+
+      const result = await response.json();
+
+      // Guarda a URL segura retornada pelo Cloudinary
+      this.formFotoUrl.set(result.secure_url);
+    } catch (err: any) {
+      this.uploadErro.set('Falha no upload da imagem. Tente novamente.');
+      this.fotoPreviewUrl.set('');
+      console.error(err);
+    } finally {
+      this.isUploadingFoto.set(false);
+      // Limpa o input para permitir re-selecionar o mesmo arquivo
+      input.value = '';
+    }
+  }
+
+  removerFoto() {
+    this.resetarFoto();
+  }
+  // ──────────────────────────────────────────────────────────────────────────
+
   selecionarProdutoNaBusca(prod: ProdutoInterno) {
     this.produtoSelecionadoParaKit.set(prod);
     this.buscaItem.set('');
@@ -196,7 +278,6 @@ export class DashboardComponent implements OnInit {
   adicionarItemAoKit() {
     const prod = this.produtoSelecionadoParaKit();
     const qtd = this.itemAdicionarQtd();
-    
     if (!prod || qtd <= 0) return;
 
     const lista = [...this.composicaoAtual()];
@@ -225,12 +306,17 @@ export class DashboardComponent implements OnInit {
 
   async salvarProduto() {
     if (!this.formNome() || !this.formSku()) {
-      alert("Por favor, preencha o Nome e o SKU.");
+      alert('Por favor, preencha o Nome e o SKU.');
       return;
     }
 
     if (this.formTipo() === 'KIT' && this.composicaoAtual().length === 0) {
-      alert("Um KIT precisa ter pelo menos um produto na sua composição!");
+      alert('Um KIT precisa ter pelo menos um produto na sua composição!');
+      return;
+    }
+
+    if (this.isUploadingFoto()) {
+      alert('Aguarde o upload da imagem terminar antes de salvar.');
       return;
     }
 
@@ -238,7 +324,7 @@ export class DashboardComponent implements OnInit {
     let produtoIdParaKit = this.formId();
 
     let estoqueCalculadoParaSalvar = this.formEstoque();
-    
+
     if (this.formTipo() === 'KIT') {
       let maxKits = Infinity;
       this.composicaoAtual().forEach(item => {
@@ -252,7 +338,8 @@ export class DashboardComponent implements OnInit {
       sku_interno: this.formSku(),
       nome_produto: this.formNome(),
       tipo: this.formTipo(),
-      estoque_fisico: estoqueCalculadoParaSalvar 
+      estoque_fisico: estoqueCalculadoParaSalvar,
+      foto_url: this.formFotoUrl() || null
     };
 
     try {
@@ -262,9 +349,9 @@ export class DashboardComponent implements OnInit {
           .insert([dadosParaSalvar])
           .select('id')
           .single();
-          
+
         if (error) throw error;
-        produtoIdParaKit = data.id; 
+        produtoIdParaKit = data.id;
       } else {
         const { error } = await this.supabase
           .from('produtos_internos')
