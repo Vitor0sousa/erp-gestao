@@ -1,0 +1,113 @@
+<div class="ai-wrapper">
+  
+  <!-- Lado Esquerdo: Lista de Produtos -->
+  <div class="ai-sidebar">
+    <div class="ai-sidebar-header">
+      <h2>
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"></path></svg>
+        Assistente de Criação
+      </h2>
+      <p>Selecione um produto para gerar anúncios com a inteligência do Gemini.</p>
+    </div>
+
+    <div class="ai-product-list">
+      @for (prod of produtos(); track prod.id) {
+        <button 
+          (click)="selecionarProduto(prod)"
+          class="ai-product-btn"
+          [class.active]="produtoAtivo()?.id === prod.id">
+          
+          <div class="ai-product-info">
+            <div>
+              <span class="ai-product-sku">{{ prod.sku_interno }}</span>
+              <span class="ai-product-name">{{ prod.nome_produto }}</span>
+            </div>
+            <span class="ai-badge"
+                  [class.simples]="prod.tipo === 'SIMPLES'"
+                  [class.kit]="prod.tipo === 'KIT'">
+              {{ prod.tipo }}
+            </span>
+          </div>
+        </button>
+      }
+    </div>
+  </div>
+
+  <!-- Lado Direito: A Mágica Acontece Aqui -->
+  <div class="ai-main">
+    
+    @if (!produtoAtivo()) {
+      <div class="ai-empty-state">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+        <p>Selecione um produto ao lado para começar.</p>
+      </div>
+    } @else {
+      
+      <!-- Cabeçalho do Produto Selecionado -->
+      <div class="ai-header-card">
+        <div>
+          <h3>{{ produtoAtivo()?.nome_produto }}</h3>
+          <p>{{ produtoAtivo()?.sku_interno }}</p>
+        </div>
+        
+        <button class="btn-magic" (click)="gerarComIA()" [disabled]="isLoading()">
+          @if (isLoading()) {
+            <svg class="spinner" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" opacity="0.25"></circle>
+              <path fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" opacity="0.75"></path>
+            </svg>
+            Pensando...
+          } @else {
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"></path></svg>
+            Gerar Anúncio Mágico
+          }
+        </button>
+      </div>
+
+      <!-- Área do Resultado do Gemini -->
+      @if (rascunho()) {
+        <div class="ai-draft-card">
+          <div class="ai-draft-body">
+            
+            @if (rascunho()?.aviso_ia) {
+              <div class="ai-warning">
+                <!-- SVG rigorosamente fechado -->
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                </svg>
+                <p><strong>Aviso do Assistente:</strong> {{ rascunho()?.aviso_ia }}</p>
+              </div>
+            }
+
+            <div class="ai-field">
+              <label>Título Otimizado (SEO)</label>
+              <div class="ai-title-value">{{ rascunho()?.titulo_sugerido }}</div>
+            </div>
+
+            <div class="ai-field">
+              <label>Descrição de Vendas</label>
+              <div class="ai-desc-value">{{ rascunho()?.descricao_sugerida }}</div>
+            </div>
+
+            <div class="ai-field">
+              <label>Imagens Selecionadas</label>
+              <div class="ai-image-grid">
+                @for (img of rascunho()?.imagens_selecionadas; track img) {
+                  <div class="ai-image-box">
+                    <img [src]="img" alt="Imagem sugerida">
+                  </div>
+                }
+                @if (rascunho()?.imagens_selecionadas?.length === 0) {
+                  <div class="ai-no-images">
+                    Nenhuma imagem encontrada no Banco de Imagens.
+                  </div>
+                }
+              </div>
+            </div>
+
+          </div>
+        </div>
+      }
+    }
+  </div>
+</div>

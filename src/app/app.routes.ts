@@ -3,6 +3,7 @@ import {  LoginComponent } from './pages/login/login';
 import { DashboardComponent } from './pages/dashboard/dashboard';
 import { AnunciosComponent } from './pages/anuncios/anuncios';
 import { LayoutComponent } from './layout/layout';
+import { AssistenteIaComponent } from './pages/assistente/assistente';
 
 export const routes: Routes = [
   { path: 'login', component: LoginComponent },
@@ -16,7 +17,7 @@ export const routes: Routes = [
     children: [
       { path: 'dashboard', component: DashboardComponent },
       { path: 'anuncios',  component: AnunciosComponent  },
-      // Adicione novas páginas aqui sem tocar na sidebar
+      {path: 'assitente', component:AssistenteIaComponent}
     ]
   }
 ];
