@@ -1,0 +1,203 @@
+/* =========================================================
+   Sidebar Universal — Hub Estoque
+   ========================================================= */
+
+:host {
+  display: block;
+  height: 100vh;
+  flex-shrink: 0;
+}
+
+.sidebar {
+  width: 260px;
+  height: 100vh;
+  background-color: #0f172a;
+  color: white;
+  display: flex;
+  flex-direction: column;
+  transition: width 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow: hidden;
+  position: relative;
+}
+
+.sidebar.recolhido {
+  width: 68px;
+}
+
+/* ── Cabeçalho ── */
+.sidebar-header {
+  height: 64px;
+  display: flex;
+  align-items: center;
+  padding: 0 1rem;
+  border-bottom: 1px solid #1e293b;
+  gap: 0.75rem;
+  flex-shrink: 0;
+}
+
+.logo-icon {
+  width: 32px;
+  height: 32px;
+  color: #3b82f6;
+  flex-shrink: 0;
+}
+
+.logo-icon svg {
+  width: 100%;
+  height: 100%;
+}
+
+.logo-text {
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: 1px;
+  margin: 0;
+  white-space: nowrap;
+  flex: 1;
+  overflow: hidden;
+}
+
+/* Botão recolher */
+.btn-toggle {
+  margin-left: auto;
+  width: 28px;
+  height: 28px;
+  flex-shrink: 0;
+  background: transparent;
+  border: 1px solid #1e293b;
+  border-radius: 6px;
+  color: #64748b;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.15s, color 0.15s;
+  padding: 0;
+}
+
+.btn-toggle svg {
+  width: 16px;
+  height: 16px;
+}
+
+.btn-toggle:hover {
+  background-color: #1e293b;
+  color: #cbd5e1;
+}
+
+/* Quando recolhido, centraliza o botão no header */
+.sidebar.recolhido .sidebar-header {
+  justify-content: center;
+  padding: 0;
+}
+
+.sidebar.recolhido .btn-toggle {
+  margin-left: 0;
+}
+
+/* ── Navegação ── */
+.sidebar-nav {
+  flex: 1;
+  padding: 1rem 0.6rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  overflow: hidden;
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  padding: 0.75rem;
+  color: #94a3b8;
+  text-decoration: none;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  transition: background-color 0.15s, color 0.15s;
+  white-space: nowrap;
+  gap: 0.75rem;
+  min-height: 44px;
+}
+
+.nav-item svg {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+}
+
+.nav-item span {
+  overflow: hidden;
+  opacity: 1;
+  transition: opacity 0.15s;
+}
+
+.nav-item:hover {
+  background-color: #1e293b;
+  color: #e2e8f0;
+}
+
+/* Estado ativo via routerLinkActive */
+.nav-item.active {
+  background-color: #2563eb;
+  color: #ffffff;
+}
+
+/* Recolhido: centraliza ícone */
+.sidebar.recolhido .nav-item {
+  justify-content: center;
+  padding: 0.75rem 0;
+}
+
+.sidebar.recolhido .nav-item span {
+  display: none;
+}
+
+/* ── Rodapé ── */
+.sidebar-footer {
+  padding: 0.75rem 0.6rem;
+  border-top: 1px solid #1e293b;
+  flex-shrink: 0;
+}
+
+.btn-logout {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  width: 100%;
+  padding: 0.75rem;
+  background: transparent;
+  border: none;
+  color: #64748b;
+  cursor: pointer;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  transition: background-color 0.15s, color 0.15s;
+  white-space: nowrap;
+  min-height: 44px;
+}
+
+.btn-logout svg {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+}
+
+.btn-logout span {
+  overflow: hidden;
+}
+
+.btn-logout:hover {
+  background-color: #1e293b;
+  color: #f87171;
+}
+
+.sidebar.recolhido .btn-logout {
+  justify-content: center;
+  padding: 0.75rem 0;
+}
+
+.sidebar.recolhido .btn-logout span {
+  display: none;
+}

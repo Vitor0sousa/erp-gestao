@@ -1,137 +1,101 @@
-<div class="dashboard-layout">
-  
-  <aside class="sidebar">
-    <div class="sidebar-header">
-      <div class="logo-icon">
-        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path></svg>
-      </div>
-      <h2>HUB ESTOQUE</h2>
+<!-- A sidebar foi removida daqui — agora vive em LayoutComponent -->
+<div class="main-content">
+
+  <header class="topbar">
+    <h1>Estoque Físico</h1>
+    <div class="user-profile">
+      <span>Painel Administrativo</span>
+      <div class="avatar">V</div>
     </div>
-    
-    <nav class="sidebar-nav">
-      <!-- ATIVO: Meus Produtos -->
-      <a routerLink="/dashboard" routerLinkActive="active" class="nav-item">
-        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"></path></svg>
-        Meus Produtos
-      </a>
- 
-      <!-- NOVO: Anúncios ML -->
-      <a routerLink="/anuncios" routerLinkActive="active" class="nav-item">
-        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path></svg>
-        Vínculos ML
-      </a>
- 
-      <!-- Anúncios (nova aba) -->
-      <a routerLink="anuncios" routerLinkActive="active" class="nav-item">
+  </header>
+
+  <div class="content-area">
+    <div class="action-bar">
+      <div class="search-box">
         <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-            d="M4 6h16M4 10h16M4 14h16M4 18h16"></path>
+            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
         </svg>
-        Anúncios
-      </a>
-    </nav>
-    
-    <div class="sidebar-footer">
-      <button class="btn-logout" (click)="fazerLogout()">
-        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
-        Sair do Sistema
+        <input type="text" placeholder="Buscar por SKU ou Nome...">
+      </div>
+      <button class="btn-new" (click)="abrirModalNovo()">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+        </svg>
+        Novo Produto / Kit
       </button>
     </div>
-  </aside>
 
-  <main class="main-content">
-    <header class="topbar">
-      <h1>Estoque Físico</h1>
-      <div class="user-profile">
-        <span>Painel Administrativo</span>
-        <div class="avatar">V</div>
-      </div>
-    </header>
-
-    <div class="content-area">
-      <div class="action-bar">
-        <div class="search-box">
-          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
-          <input type="text" placeholder="Buscar por SKU ou Nome...">
+    <div class="card-table">
+      @if (isLoading()) {
+        <div class="loading-state">Carregando estoque...</div>
+      } @else if (errorMessage()) {
+        <div class="error-state">{{ errorMessage() }}</div>
+      } @else if (produtos().length === 0) {
+        <div class="empty-state">
+          Nenhum produto encontrado. Clique em "Novo Produto" para começar.
         </div>
-        <button class="btn-new" (click)="abrirModalNovo()">
-          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
-          Novo Produto / Kit
-        </button>
-      </div>
-
-      <div class="card-table">
-        @if (isLoading()) {
-          <div class="loading-state">Carregando estoque...</div>
-        } @else if (errorMessage()) {
-          <div class="error-state">{{ errorMessage() }}</div>
-        } @else if (produtos().length === 0) {
-          <div class="empty-state">
-            Nenhum produto encontrado. Clique em "Novo Produto" para começar.
-          </div>
-        } @else {
-          <table class="data-table">
-            <thead>
+      } @else {
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th class="col-foto"></th>
+              <th>SKU Interno</th>
+              <th>Nome do Produto</th>
+              <th>Tipo</th>
+              <th class="text-right">Montáveis / Estoque</th>
+              <th class="text-center">Ações</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (produto of produtos(); track produto.id) {
               <tr>
-                <th class="col-foto"></th>
-                <th>SKU Interno</th>
-                <th>Nome do Produto</th>
-                <th>Tipo</th>
-                <th class="text-right">Montáveis / Estoque</th>
-                <th class="text-center">Ações</th>
-              </tr>
-            </thead>
-            <tbody>
-              @for (produto of produtos(); track produto.id) {
-                <tr>
-                  <!-- Foto thumbnail na tabela -->
-                  <td class="col-foto">
-                    @if (produto.foto_url) {
-                      <img [src]="produto.foto_url" [alt]="produto.nome_produto" class="thumb-tabela">
-                    } @else {
-                      <div class="thumb-placeholder">
-                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
-                      </div>
-                    }
-                  </td>
-
-                  <td class="font-mono">{{ produto.sku_interno }}</td>
-                  <td class="font-bold">{{ produto.nome_produto }}</td>
-                  <td>
-                    <span class="badge" [class.badge-kit]="produto.tipo === 'KIT'">
-                      {{ produto.tipo || 'SIMPLES' }}
+                <td class="col-foto">
+                  @if (produto.foto_url) {
+                    <img [src]="produto.foto_url" [alt]="produto.nome_produto" class="thumb-tabela">
+                  } @else {
+                    <div class="thumb-placeholder">
+                      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                          d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                      </svg>
+                    </div>
+                  }
+                </td>
+                <td class="font-mono">{{ produto.sku_interno }}</td>
+                <td class="font-bold">{{ produto.nome_produto }}</td>
+                <td>
+                  <span class="badge" [class.badge-kit]="produto.tipo === 'KIT'">
+                    {{ produto.tipo || 'SIMPLES' }}
+                  </span>
+                </td>
+                <td class="text-right font-number">
+                  @if (produto.tipo === 'SIMPLES') {
+                    <span [class.text-red]="produto.estoque_fisico <= 0">{{ produto.estoque_fisico || 0 }}</span>
+                  } @else {
+                    <span class="kit-stock-calc" [class.text-red]="produto.estoque_calculado === 0">
+                      {{ produto.estoque_calculado }}<small>Kits</small>
                     </span>
-                  </td>
-                  
-                  <td class="text-right font-number">
-                    @if (produto.tipo === 'SIMPLES') {
-                      <span [class.text-red]="produto.estoque_fisico <= 0">{{ produto.estoque_fisico || 0 }}</span>
-                    } @else {
-                      <span class="kit-stock-calc" [class.text-red]="produto.estoque_calculado === 0">
-                        {{ produto.estoque_calculado }}
-                        <small>Kits</small>
-                      </span>
-                    }
-                  </td>
-                  
-                  <td class="text-center">
-                    <button class="btn-icon" title="Editar / Ver Composição" (click)="abrirModalEditar(produto)">
-                      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
-                    </button>
-                  </td>
-                </tr>
-              }
-            </tbody>
-          </table>
-        }
-      </div>
+                  }
+                </td>
+                <td class="text-center">
+                  <button class="btn-icon" title="Editar" (click)="abrirModalEditar(produto)">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/>
+                    </svg>
+                  </button>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      }
     </div>
-  </main>
+  </div>
 </div>
 
-<!-- ========================================= -->
-<!-- MODAL DE CRIAÇÃO / EDIÇÃO (EXPANDIDO)     -->
-<!-- ========================================= -->
+<!-- MODAL — mantido igual ao original -->
 @if (isModalOpen()) {
   <div class="modal-overlay">
     <div class="modal-card modal-large">
@@ -139,86 +103,73 @@
         <h3>{{ modalMode() === 'NOVO' ? 'Criar Produto / Kit' : 'Editar Cadastro' }}</h3>
         <button class="btn-close" (click)="fecharModal()">&times;</button>
       </div>
-      
+
       <div class="modal-body scroll-y">
-
-        <!-- === LAYOUT PRINCIPAL: FOTO À ESQUERDA + CAMPOS À DIREITA === -->
         <div class="modal-top-layout">
-
-          <!-- ── COLUNA DA FOTO ── -->
           <div class="foto-coluna">
             <label class="form-label-top">Foto do Produto</label>
-
-            <!-- Preview ou zona de upload -->
             <div class="foto-upload-area" [class.tem-foto]="fotoPreviewUrl()">
-
               @if (isUploadingFoto()) {
-                <!-- Estado: fazendo upload -->
                 <div class="foto-loading">
                   <svg class="spinner-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
                   </svg>
                   <span>Enviando...</span>
                 </div>
-
               } @else if (fotoPreviewUrl()) {
-                <!-- Estado: foto carregada -->
                 <div class="foto-preview-box">
                   <img [src]="fotoPreviewUrl()" alt="Preview" class="foto-preview-img">
                   <button class="btn-remover-foto" (click)="removerFoto()" title="Remover foto">
-                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
                   </button>
                 </div>
-
               } @else {
-                <!-- Estado: sem foto, zona de clique -->
                 <label class="foto-drop-zone" for="inputFotoUpload">
-                  <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                  <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                      d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                  </svg>
                   <span class="drop-text">Clique para adicionar foto</span>
                   <span class="drop-sub">JPG, PNG ou WEBP · max 5MB</span>
                 </label>
               }
             </div>
-
-            <!-- Input de arquivo oculto -->
-            <input
-              id="inputFotoUpload"
-              type="file"
-              accept="image/jpeg,image/png,image/webp"
-              style="display:none"
-              (change)="onFotoSelecionada($event)"
-            >
-
-            <!-- Erro de upload -->
+            <input id="inputFotoUpload" type="file" accept="image/jpeg,image/png,image/webp"
+              style="display:none" (change)="onFotoSelecionada($event)">
             @if (uploadErro()) {
               <div class="upload-erro">
-                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
                 {{ uploadErro() }}
               </div>
             }
-
-            <!-- Botão trocar foto (quando já tem uma) -->
             @if (fotoPreviewUrl() && !isUploadingFoto()) {
               <label for="inputFotoUpload" class="btn-trocar-foto">
-                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
+                </svg>
                 Trocar foto
               </label>
             }
           </div>
 
-          <!-- ── COLUNA DOS CAMPOS ── -->
           <div class="campos-coluna">
             <div class="modal-grid">
               <div class="form-group">
                 <label>SKU Interno</label>
-                <input type="text" [(ngModel)]="formSku" placeholder="Ex: SHAMPOO-01" [disabled]="modalMode() === 'EDITAR'">
+                <input type="text" [(ngModel)]="formSku" placeholder="Ex: SHAMPOO-01"
+                  [disabled]="modalMode() === 'EDITAR'">
               </div>
-
               <div class="form-group span-2">
                 <label>Nome do Produto / Kit</label>
                 <input type="text" [(ngModel)]="formNome" placeholder="Ex: Kit Shampoo + Condicionador">
               </div>
-
               <div class="form-group">
                 <label>Tipo do Item</label>
                 <select [(ngModel)]="formTipo" [disabled]="modalMode() === 'EDITAR'">
@@ -226,7 +177,6 @@
                   <option value="KIT">Kit (Composição)</option>
                 </select>
               </div>
-
               @if (formTipo() === 'SIMPLES') {
                 <div class="form-group">
                   <label>Quantidade em Estoque</label>
@@ -234,10 +184,13 @@
                 </div>
                 <div class="form-group"></div>
               } @else {
-                <div class="form-group span-2 flex items-center">
-                  <div class="info-box w-full">
-                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" class="info-icon"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                    <span>O estoque de um <strong>KIT</strong> é calculado automaticamente com base nos seus ingredientes.</span>
+                <div class="form-group span-2">
+                  <div class="info-box">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" class="info-icon">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                    <span>O estoque de um <strong>KIT</strong> é calculado automaticamente.</span>
                   </div>
                 </div>
               }
@@ -245,30 +198,24 @@
           </div>
         </div>
 
-        <!-- ===================================== -->
-        <!-- ÁREA DA COMPOSIÇÃO DO KIT             -->
-        <!-- ===================================== -->
         @if (formTipo() === 'KIT') {
           <div class="kit-section">
             <div class="kit-header-title">
               <h4>Receita de Montagem</h4>
               <p>Busque e adicione os produtos físicos que compõem este pacote.</p>
             </div>
-
             <div class="add-item-box">
               @if (!produtoSelecionadoParaKit()) {
                 <div class="autocomplete-container">
-                  <input type="text" [(ngModel)]="buscaItem" placeholder="🔍 Digite o SKU ou Nome do produto físico para adicionar à receita..." class="search-input">
-                  
+                  <input type="text" [(ngModel)]="buscaItem"
+                    placeholder="🔍 Digite o SKU ou Nome do produto físico..." class="search-input">
                   @if (resultadosBusca().length > 0) {
                     <ul class="autocomplete-dropdown">
                       @for (prod of resultadosBusca(); track prod.id) {
                         <li class="autocomplete-item" (click)="selecionarProdutoNaBusca(prod)">
-                          <div class="item-info">
-                            <strong>{{ prod.sku_interno }}</strong> - {{ prod.nome_produto }}
-                          </div>
+                          <div class="item-info"><strong>{{ prod.sku_interno }}</strong> - {{ prod.nome_produto }}</div>
                           <div class="item-stock" [class.low-stock]="prod.estoque_fisico <= 0">
-                            Estoque Atual: {{ prod.estoque_fisico }}
+                            Estoque: {{ prod.estoque_fisico }}
                           </div>
                         </li>
                       }
@@ -280,33 +227,29 @@
                   <div class="selected-info">
                     <span class="selected-sku">{{ produtoSelecionadoParaKit()?.sku_interno }}</span>
                     <span class="selected-name">{{ produtoSelecionadoParaKit()?.nome_produto }}</span>
-                    <span class="selected-stock">Estoque Disp.: {{ produtoSelecionadoParaKit()?.estoque_fisico }}</span>
+                    <span class="selected-stock">Estoque: {{ produtoSelecionadoParaKit()?.estoque_fisico }}</span>
                   </div>
                   <button class="btn-trocar" (click)="removerSelecaoDaBusca()">Trocar produto</button>
                 </div>
-                
                 <div class="qtd-add-row">
-                  <div class="form-group" style="margin: 0;">
+                  <div class="form-group" style="margin:0">
                     <label>Qtd. neste Kit:</label>
                     <input type="number" [(ngModel)]="itemAdicionarQtd" min="1" class="qtd-input">
                   </div>
                   <button class="btn-add-item" (click)="adicionarItemAoKit()">
-                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                    </svg>
                     Adicionar à Receita
                   </button>
                 </div>
               }
             </div>
-
             <div class="kit-items-list">
               <h5 class="list-title">Itens do Kit ({{ composicaoAtual().length }})</h5>
-              
               @if (composicaoAtual().length === 0) {
-                <div class="empty-kit">
-                  A receita do Kit está vazia. Use a barra de pesquisa acima para adicionar componentes.
-                </div>
+                <div class="empty-kit">A receita está vazia. Use a busca para adicionar componentes.</div>
               }
-              
               <div class="kit-grid-items">
                 @for (item of composicaoAtual(); track item.sku_simples_id; let i = $index) {
                   <div class="kit-item-row">
@@ -314,11 +257,14 @@
                     <div class="item-nome-box">
                       <div class="item-nome">{{ item.nome_produto }}</div>
                       <div class="item-sub-stock" [class.low-stock]="item.estoque_atual < item.quantidade_necessaria">
-                        Estoque Físico Atual: {{ item.estoque_atual }}
+                        Estoque Físico: {{ item.estoque_atual }}
                       </div>
                     </div>
-                    <button class="btn-remove-item" title="Remover da receita" (click)="removerItemDoKit(i)">
-                      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                    <button class="btn-remove-item" (click)="removerItemDoKit(i)">
+                      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                      </svg>
                     </button>
                   </div>
                 }
@@ -326,13 +272,12 @@
             </div>
           </div>
         }
-
       </div>
 
       <div class="modal-footer">
         <button class="btn-secondary" (click)="fecharModal()">Cancelar</button>
         <button class="btn-primary" (click)="salvarProduto()" [disabled]="isSaving() || isUploadingFoto()">
-          {{ isSaving() ? 'A Salvar, aguarde...' : isUploadingFoto() ? 'Enviando imagem...' : 'Salvar e Sincronizar' }}
+          {{ isSaving() ? 'A Salvar...' : isUploadingFoto() ? 'Enviando imagem...' : 'Salvar e Sincronizar' }}
         </button>
       </div>
     </div>

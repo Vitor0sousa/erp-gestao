@@ -1,0 +1,13 @@
+.app-shell {
+  display: flex;
+  height: 100vh;
+  overflow: hidden;
+  background-color: #f3f4f6;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+}
+
+.page-content {
+  flex: 1;
+  overflow-y: auto;
+  min-width: 0;
+}

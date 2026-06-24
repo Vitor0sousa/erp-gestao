@@ -1,0 +1,73 @@
+<aside class="sidebar" [class.recolhido]="recolhido()">
+
+  <!-- ── Cabeçalho ── -->
+  <div class="sidebar-header">
+    <div class="logo-icon">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+          d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
+      </svg>
+    </div>
+    @if (!recolhido()) {
+      <h2 class="logo-text">HUB ESTOQUE</h2>
+    }
+    <button class="btn-toggle" (click)="toggleSidebar()" [title]="recolhido() ? 'Expandir menu' : 'Recolher menu'">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        @if (recolhido()) {
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+        } @else {
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+        }
+      </svg>
+    </button>
+  </div>
+
+  <!-- ── Navegação ── -->
+  <nav class="sidebar-nav">
+
+    <a routerLink="/dashboard" routerLinkActive="active" class="nav-item" [title]="recolhido() ? 'Meus Produtos' : ''">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+          d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"/>
+      </svg>
+      @if (!recolhido()) {
+        <span>Meus Produtos</span>
+      }
+    </a>
+
+    <a routerLink="/vinculos" routerLinkActive="active" class="nav-item" [title]="recolhido() ? 'Vínculos ML' : ''">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+          d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/>
+      </svg>
+      @if (!recolhido()) {
+        <span>Vínculos ML</span>
+      }
+    </a>
+
+    <a routerLink="/anuncios" routerLinkActive="active" class="nav-item" [title]="recolhido() ? 'Anúncios' : ''">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+          d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+      </svg>
+      @if (!recolhido()) {
+        <span>Anúncios</span>
+      }
+    </a>
+
+  </nav>
+
+  <!-- ── Rodapé ── -->
+  <div class="sidebar-footer">
+    <button class="btn-logout" (click)="fazerLogout()" [title]="recolhido() ? 'Sair' : ''">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+          d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
+      </svg>
+      @if (!recolhido()) {
+        <span>Sair do Sistema</span>
+      }
+    </button>
+  </div>
+
+</aside>
