@@ -88,6 +88,27 @@ export class DashboardComponent implements OnInit {
     const { data } = await this.supabase.auth.getSession();
     if (!data.session) this.router.navigate(['/login']);
   }
+  private async obterAssinaturaCloudinary() {
+  const { data } = await this.supabase.auth.getSession();
+  const token = data.session?.access_token;
+
+  if (!token) {
+    throw new Error('Sessão expirada. Faça login novamente.');
+  }
+
+  const response = await fetch('/api/cloudinary-sign', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${token}`
+    }
+  });
+
+  if (!response.ok) {
+    throw new Error('Não foi possível autorizar o upload.');
+  }
+
+  return response.json(); // { signature, timestamp, apiKey, cloudName, folder }
+}
 
   async carregarProdutos() {
     this.isLoading.set(true);
@@ -200,60 +221,65 @@ export class DashboardComponent implements OnInit {
     this.isUploadingFoto.set(false);
   }
 
-  async onFotoSelecionada(event: Event) {
-    const input = event.target as HTMLInputElement;
-    const file = input.files?.[0];
-    if (!file) return;
+ async onFotoSelecionada(event: Event) {
+  const input = event.target as HTMLInputElement;
+  const file = input.files?.[0];
+  if (!file) return;
 
-    // Validações básicas
-    if (!file.type.startsWith('image/')) {
-      this.uploadErro.set('Apenas imagens são permitidas (JPG, PNG, WEBP).');
-      return;
-    }
-    if (file.size > 5 * 1024 * 1024) {
-      this.uploadErro.set('A imagem deve ter no máximo 5MB.');
-      return;
-    }
-
-    // Preview local imediato
-    const reader = new FileReader();
-    reader.onload = (e) => this.fotoPreviewUrl.set(e.target?.result as string);
-    reader.readAsDataURL(file);
-
-    // Upload para Cloudinary
-    this.isUploadingFoto.set(true);
-    this.uploadErro.set('');
-    this.formFotoUrl.set('');
-
-    try {
-      const formData = new FormData();
-      formData.append('file', file);
-      formData.append('upload_preset', this.cloudinaryPreset);
-      formData.append('folder', 'produtos');
-
-      const response = await fetch(this.cloudinaryUrl, {
-        method: 'POST',
-        body: formData
-      });
-
-      if (!response.ok) {
-        throw new Error(`Erro no upload: ${response.statusText}`);
-      }
-
-      const result = await response.json();
-
-      // Guarda a URL segura retornada pelo Cloudinary
-      this.formFotoUrl.set(result.secure_url);
-    } catch (err: any) {
-      this.uploadErro.set('Falha no upload da imagem. Tente novamente.');
-      this.fotoPreviewUrl.set('');
-      console.error(err);
-    } finally {
-      this.isUploadingFoto.set(false);
-      // Limpa o input para permitir re-selecionar o mesmo arquivo
-      input.value = '';
-    }
+  // Validações básicas (mantidas)
+  if (!file.type.startsWith('image/')) {
+    this.uploadErro.set('Apenas imagens são permitidas (JPG, PNG, WEBP).');
+    return;
   }
+  if (file.size > 5 * 1024 * 1024) {
+    this.uploadErro.set('A imagem deve ter no máximo 5MB.');
+    return;
+  }
+
+  // Preview local imediato (mantido)
+  const reader = new FileReader();
+  reader.onload = (e) => this.fotoPreviewUrl.set(e.target?.result as string);
+  reader.readAsDataURL(file);
+
+  this.isUploadingFoto.set(true);
+  this.uploadErro.set('');
+  this.formFotoUrl.set('');
+
+  try {
+    // 1. Pede a assinatura pra nossa API (só funciona se estiver logado)
+    const { signature, timestamp, apiKey, cloudName, folder } = await this.obterAssinaturaCloudinary();
+
+    // 2. Monta o upload assinado (sem upload_preset)
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('api_key', apiKey);
+    formData.append('timestamp', timestamp.toString());
+    formData.append('signature', signature);
+    formData.append('folder', folder);
+
+    const uploadUrl = `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`;
+
+    const response = await fetch(uploadUrl, {
+      method: 'POST',
+      body: formData
+    });
+
+    if (!response.ok) {
+      throw new Error(`Erro no upload: ${response.statusText}`);
+    }
+
+    const result = await response.json();
+    this.formFotoUrl.set(result.secure_url);
+
+  } catch (err: any) {
+    this.uploadErro.set(err.message || 'Falha no upload da imagem. Tente novamente.');
+    this.fotoPreviewUrl.set('');
+    console.error(err);
+  } finally {
+    this.isUploadingFoto.set(false);
+    input.value = '';
+  }
+}
 
   removerFoto() {
     this.resetarFoto();
