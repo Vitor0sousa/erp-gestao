@@ -5,7 +5,7 @@ import { Router } from '@angular/router';
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 
 // IMPORTANTE: Adicione esta linha no topo para importar o environment
-import { environment } from '../../../environments/environment.development';
+import { environment } from '../../../environments/environment';
 
 @Component({
   selector: 'app-login',
