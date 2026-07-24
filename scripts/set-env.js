@@ -10,10 +10,10 @@ const envFileContent = `export const environment = {
 `;
 
 const targetDir = path.join(__dirname, '../src/environments');
-const targetPath = path.join(targetDir, 'environment.development.ts');
+const targetPath = path.join(targetDir, 'environment.ts');
 
 // Garante que a pasta existe antes de escrever
 fs.mkdirSync(targetDir, { recursive: true });
 
 fs.writeFileSync(targetPath, envFileContent);
-console.log('✅ environment.development.ts gerado com sucesso');
+console.log('✅ environment.ts gerado com sucesso');
