@@ -38,8 +38,6 @@ export class DashboardComponent implements OnInit {
   produtos = signal<ProdutoInterno[]>([]);
   isLoading = signal(true);
   errorMessage = signal('');
-  private readonly cloudinaryUrl = environment.cloudinaryUploadUrl;
-  private readonly cloudinaryPreset = environment.cloudinaryUploadPreset;
   produtosSimples = computed(() => this.produtos().filter(p => p.tipo === 'SIMPLES'));
 
   isModalOpen = signal(false);
