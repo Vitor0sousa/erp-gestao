@@ -4,6 +4,7 @@ import { DashboardComponent } from './pages/dashboard/dashboard';
 import { AnunciosComponent } from './pages/anuncios/anuncios';
 import { LayoutComponent } from './layout/layout';
 import { AssistenteIaComponent } from './pages/assistente/assistente';
+import { DashboardFinanceiroComponent } from './pages/dashboard-financeiro/dashboard-financeiro';
 
 export const routes: Routes = [
   { path: 'login', component: LoginComponent },
@@ -17,7 +18,8 @@ export const routes: Routes = [
     children: [
       { path: 'dashboard', component: DashboardComponent },
       { path: 'anuncios',  component: AnunciosComponent  },
-      {path: 'assitente', component:AssistenteIaComponent}
+      {path: 'assitente', component:AssistenteIaComponent},
+      { path: 'financeiro', component: DashboardFinanceiroComponent }
     ]
   }
 ];

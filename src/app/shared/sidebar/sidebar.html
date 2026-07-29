@@ -23,8 +23,20 @@
   </div>
 
   <!-- ── Navegação ── -->
+  
   <nav class="sidebar-nav">
-
+     <a routerLink="/financeiro" routerLinkActive="active" class="nav-item" [title]="recolhido() ? 'Dashboard Financeiro' : ''">
+  <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+      d="M9 8h6m-6 4h6m-6 4h4M5 3h14a2 2 0 012 2v14a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2z"/>
+  </svg>
+  @if (!recolhido()) {
+    <span>Financeiro</span>
+  }
+</a> 
+   
+   
+   
     <a routerLink="/dashboard" routerLinkActive="active" class="nav-item" [title]="recolhido() ? 'Meus Produtos' : ''">
       <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"

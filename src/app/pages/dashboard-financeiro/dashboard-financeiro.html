@@ -1,0 +1,96 @@
+<div class="main-content">
+
+  <header class="topbar">
+    <h1>Dashboard Financeiro</h1>
+    <div class="user-profile">
+      <span>Painel Administrativo</span>
+      <div class="avatar">V</div>
+    </div>
+  </header>
+
+  <div class="content-area">
+
+    <!-- Filtro de período -->
+    <div class="periodo-bar">
+      <div class="periodo-campo">
+        <label>De</label>
+        <input type="date" [(ngModel)]="periodoInicio">
+      </div>
+      <div class="periodo-campo">
+        <label>Até</label>
+        <input type="date" [(ngModel)]="periodoFim">
+      </div>
+      <button class="btn-aplicar" (click)="aplicarFiltro()" [disabled]="isLoading()">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+        </svg>
+        Aplicar
+      </button>
+    </div>
+
+    @if (isLoading()) {
+      <div class="loading-state">Calculando resultados...</div>
+    } @else if (errorMessage()) {
+      <div class="error-state">{{ errorMessage() }}</div>
+    } @else if (dados()) {
+
+      <!-- Grid de KPIs -->
+      <div class="kpi-grid">
+        <div class="kpi-card">
+          <span class="kpi-label">Faturamento Bruto</span>
+          <span class="kpi-valor kpi-azul">R$ {{ dados()!.faturamento_bruto | number:'1.2-2' }}</span>
+        </div>
+
+        <div class="kpi-card">
+          <span class="kpi-label">Custo Total</span>
+          <span class="kpi-valor kpi-laranja">R$ {{ dados()!.custo_total | number:'1.2-2' }}</span>
+        </div>
+
+        <div class="kpi-card">
+          <span class="kpi-label">Lucro Líquido</span>
+          <span class="kpi-valor" [class.kpi-verde]="dados()!.lucro_liquido >= 0" [class.kpi-vermelho]="dados()!.lucro_liquido < 0">
+            R$ {{ dados()!.lucro_liquido | number:'1.2-2' }}
+          </span>
+        </div>
+
+        <div class="kpi-card">
+          <span class="kpi-label">Número de Vendas</span>
+          <span class="kpi-valor kpi-roxo">{{ dados()!.numero_vendas }}</span>
+        </div>
+
+        <div class="kpi-card">
+          <span class="kpi-label">Ticket Médio</span>
+          <span class="kpi-valor kpi-azul">R$ {{ dados()!.ticket_medio | number:'1.2-2' }}</span>
+        </div>
+      </div>
+
+      <!-- Item mais vendido -->
+      <div class="mais-vendido-section">
+        <h3 class="section-title">Item Mais Vendido no Período</h3>
+
+        @if (dados()!.item_mais_vendido) {
+          <div class="produto-mini-card">
+            @if (dados()!.item_mais_vendido!.foto_url) {
+              <img [src]="dados()!.item_mais_vendido!.foto_url" [alt]="dados()!.item_mais_vendido!.titulo" class="produto-mini-foto">
+            } @else {
+              <div class="produto-mini-foto produto-mini-placeholder">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                    d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                </svg>
+              </div>
+            }
+            <div class="produto-mini-info">
+              <span class="produto-mini-titulo">{{ dados()!.item_mais_vendido!.titulo }}</span>
+              <span class="produto-mini-vendas">{{ dados()!.item_mais_vendido!.total_vendido }} vendas</span>
+            </div>
+          </div>
+        } @else {
+          <div class="empty-state">Nenhuma venda com produto identificado neste período.</div>
+        }
+      </div>
+
+    }
+
+  </div>
+</div>

@@ -300,6 +300,13 @@
 .form-group input:disabled, .form-group select:disabled { background-color: #f3f4f6; color: #9ca3af; cursor: not-allowed; }
 .input-estoque { font-size: 1.15rem !important; font-weight: bold; color: #1d4ed8; }
 
+/* Campo de custo unitário (produto SIMPLES) */
+.input-custo {
+  font-size: 1.15rem !important;
+  font-weight: bold;
+  color: #059669;
+}
+
 /* Info Box */
 .info-box {
   display: flex; align-items: center;
@@ -322,8 +329,45 @@
 /* ========================================= */
 
 .kit-section { padding-top: 1.5rem; border-top: 2px dashed #e5e7eb; }
+
+/* Cabeçalho da receita com preview de custo do kit */
+.kit-header-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
 .kit-header-title h4 { margin: 0; font-size: 1.1rem; color: #111827; }
-.kit-header-title p { margin: 0 0 1rem 0; font-size: 0.85rem; color: #6b7280; }
+.kit-header-title p { margin: 0; font-size: 0.85rem; color: #6b7280; }
+
+.custo-kit-preview {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  background-color: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  padding: 0.6rem 1.1rem;
+  border-radius: 8px;
+  min-width: 170px;
+  flex-shrink: 0;
+}
+
+.custo-label {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #16a34a;
+  font-weight: 600;
+}
+
+.custo-valor {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: #15803d;
+  margin-top: 0.15rem;
+}
 
 .add-item-box { background-color: #f8fafc; padding: 1.2rem; border-radius: 8px; border: 1px solid #e2e8f0; margin-bottom: 1.5rem; }
 
@@ -364,6 +408,12 @@
 .item-nome { font-size: 0.95rem; color: #374151; font-weight: 600; }
 .item-sub-stock { font-size: 0.8rem; color: #059669; margin-top: 0.2rem; }
 .item-sub-stock.low-stock { color: #dc2626; font-weight: 500; }
+
+/* Custo inline dentro de cada item da receita */
+.item-custo-inline {
+  color: #16a34a;
+  font-weight: 600;
+}
 
 .btn-remove-item { background: transparent; border: none; color: #ef4444; cursor: pointer; padding: 0.4rem; border-radius: 4px; display: flex; align-items: center; justify-content: center;}
 .btn-remove-item svg { width: 22px; height: 22px; }

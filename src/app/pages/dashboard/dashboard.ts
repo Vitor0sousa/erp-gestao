@@ -13,6 +13,8 @@ interface ProdutoInterno {
   estoque_fisico: number;
   estoque_calculado?: number;
   foto_url?: string;
+  custo_unitario?: number;
+  custo_calculado?: number; // só populado pra KIT
 }
 
 interface ComposicaoItem {
@@ -20,11 +22,8 @@ interface ComposicaoItem {
   nome_produto: string;
   quantidade_necessaria: number;
   estoque_atual: number;
+  custo_unitario: number;
 }
-
-// ─── Cloudinary config ───────────────────────────────────────────────────────
-
-// ─────────────────────────────────────────────────────────────────────────────
 
 @Component({
   selector: 'app-dashboard',
@@ -32,7 +31,6 @@ interface ComposicaoItem {
   imports: [CommonModule, FormsModule],
   templateUrl: './dashboard.html',
   styleUrl: './dashboard.css'
-  
 })
 export class DashboardComponent implements OnInit {
   produtos = signal<ProdutoInterno[]>([]);
@@ -49,6 +47,7 @@ export class DashboardComponent implements OnInit {
   formNome = signal('');
   formTipo = signal<'SIMPLES' | 'KIT'>('SIMPLES');
   formEstoque = signal<number>(0);
+  formCusto = signal<number>(0);
 
   // ── Foto / Cloudinary ──────────────────────────────────────────────────────
   formFotoUrl = signal<string>('');
@@ -71,6 +70,12 @@ export class DashboardComponent implements OnInit {
     ).slice(0, 8);
   });
 
+  // Soma em tempo real do custo do kit, com base nos itens já adicionados na receita
+  custoKitCalculado = computed(() =>
+    this.composicaoAtual().reduce((total, item) =>
+      total + (item.custo_unitario * item.quantidade_necessaria), 0)
+  );
+
   private supabase: SupabaseClient;
 
   constructor(private router: Router) {
@@ -86,27 +91,28 @@ export class DashboardComponent implements OnInit {
     const { data } = await this.supabase.auth.getSession();
     if (!data.session) this.router.navigate(['/login']);
   }
+
   private async obterAssinaturaCloudinary() {
-  const { data } = await this.supabase.auth.getSession();
-  const token = data.session?.access_token;
+    const { data } = await this.supabase.auth.getSession();
+    const token = data.session?.access_token;
 
-  if (!token) {
-    throw new Error('Sessão expirada. Faça login novamente.');
-  }
-
-  const response = await fetch('/api/cloudinary-sign', {
-    method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${token}`
+    if (!token) {
+      throw new Error('Sessão expirada. Faça login novamente.');
     }
-  });
 
-  if (!response.ok) {
-    throw new Error('Não foi possível autorizar o upload.');
+    const response = await fetch('/api/cloudinary-sign', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    });
+
+    if (!response.ok) {
+      throw new Error('Não foi possível autorizar o upload.');
+    }
+
+    return response.json(); // { signature, timestamp, apiKey, cloudName, folder }
   }
-
-  return response.json(); // { signature, timestamp, apiKey, cloudName, folder }
-}
 
   async carregarProdutos() {
     this.isLoading.set(true);
@@ -130,17 +136,26 @@ export class DashboardComponent implements OnInit {
 
           if (itensDesteKit.length === 0) {
             p.estoque_calculado = 0;
+            p.custo_calculado = 0;
           } else {
             let maxKitsPossiveis = Infinity;
+            let custoTotal = 0;
+
             itensDesteKit.forEach(itemDaReceita => {
               const prodSimples = prods.find(ps => ps.id === itemDaReceita.sku_simples_id);
               const estoqueAtual = prodSimples ? prodSimples.estoque_fisico : 0;
+              const custoComponente = prodSimples ? (prodSimples.custo_unitario || 0) : 0;
+
               const quantosKitsDaParaFazer = Math.floor(estoqueAtual / itemDaReceita.quantidade_necessaria);
               if (quantosKitsDaParaFazer < maxKitsPossiveis) {
                 maxKitsPossiveis = quantosKitsDaParaFazer;
               }
+
+              custoTotal += custoComponente * itemDaReceita.quantidade_necessaria;
             });
+
             p.estoque_calculado = maxKitsPossiveis === Infinity ? 0 : maxKitsPossiveis;
+            p.custo_calculado = custoTotal;
           }
         }
         return p;
@@ -162,6 +177,7 @@ export class DashboardComponent implements OnInit {
     this.formNome.set('');
     this.formTipo.set('SIMPLES');
     this.formEstoque.set(0);
+    this.formCusto.set(0);
     this.resetarFoto();
     this.resetarBuscaComposicao();
     this.composicaoAtual.set([]);
@@ -175,6 +191,7 @@ export class DashboardComponent implements OnInit {
     this.formNome.set(produto.nome_produto);
     this.formTipo.set(produto.tipo || 'SIMPLES');
     this.formEstoque.set(produto.estoque_fisico || 0);
+    this.formCusto.set(produto.custo_unitario || 0);
 
     // Carrega foto existente
     this.formFotoUrl.set(produto.foto_url || '');
@@ -197,7 +214,8 @@ export class DashboardComponent implements OnInit {
             sku_simples_id: d.sku_simples_id,
             quantidade_necessaria: d.quantidade_necessaria,
             nome_produto: prodLocal ? prodLocal.nome_produto : 'Produto não encontrado',
-            estoque_atual: prodLocal ? prodLocal.estoque_fisico : 0
+            estoque_atual: prodLocal ? prodLocal.estoque_fisico : 0,
+            custo_unitario: prodLocal ? (prodLocal.custo_unitario || 0) : 0
           };
         });
         this.composicaoAtual.set(itensCarregados);
@@ -219,65 +237,65 @@ export class DashboardComponent implements OnInit {
     this.isUploadingFoto.set(false);
   }
 
- async onFotoSelecionada(event: Event) {
-  const input = event.target as HTMLInputElement;
-  const file = input.files?.[0];
-  if (!file) return;
+  async onFotoSelecionada(event: Event) {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    if (!file) return;
 
-  // Validações básicas (mantidas)
-  if (!file.type.startsWith('image/')) {
-    this.uploadErro.set('Apenas imagens são permitidas (JPG, PNG, WEBP).');
-    return;
-  }
-  if (file.size > 5 * 1024 * 1024) {
-    this.uploadErro.set('A imagem deve ter no máximo 5MB.');
-    return;
-  }
-
-  // Preview local imediato (mantido)
-  const reader = new FileReader();
-  reader.onload = (e) => this.fotoPreviewUrl.set(e.target?.result as string);
-  reader.readAsDataURL(file);
-
-  this.isUploadingFoto.set(true);
-  this.uploadErro.set('');
-  this.formFotoUrl.set('');
-
-  try {
-    // 1. Pede a assinatura pra nossa API (só funciona se estiver logado)
-    const { signature, timestamp, apiKey, cloudName, folder } = await this.obterAssinaturaCloudinary();
-
-    // 2. Monta o upload assinado (sem upload_preset)
-    const formData = new FormData();
-    formData.append('file', file);
-    formData.append('api_key', apiKey);
-    formData.append('timestamp', timestamp.toString());
-    formData.append('signature', signature);
-    formData.append('folder', folder);
-
-    const uploadUrl = `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`;
-
-    const response = await fetch(uploadUrl, {
-      method: 'POST',
-      body: formData
-    });
-
-    if (!response.ok) {
-      throw new Error(`Erro no upload: ${response.statusText}`);
+    // Validações básicas
+    if (!file.type.startsWith('image/')) {
+      this.uploadErro.set('Apenas imagens são permitidas (JPG, PNG, WEBP).');
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      this.uploadErro.set('A imagem deve ter no máximo 5MB.');
+      return;
     }
 
-    const result = await response.json();
-    this.formFotoUrl.set(result.secure_url);
+    // Preview local imediato
+    const reader = new FileReader();
+    reader.onload = (e) => this.fotoPreviewUrl.set(e.target?.result as string);
+    reader.readAsDataURL(file);
 
-  } catch (err: any) {
-    this.uploadErro.set(err.message || 'Falha no upload da imagem. Tente novamente.');
-    this.fotoPreviewUrl.set('');
-    console.error(err);
-  } finally {
-    this.isUploadingFoto.set(false);
-    input.value = '';
+    this.isUploadingFoto.set(true);
+    this.uploadErro.set('');
+    this.formFotoUrl.set('');
+
+    try {
+      // 1. Pede a assinatura pra nossa API (só funciona se estiver logado)
+      const { signature, timestamp, apiKey, cloudName, folder } = await this.obterAssinaturaCloudinary();
+
+      // 2. Monta o upload assinado (sem upload_preset)
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('api_key', apiKey);
+      formData.append('timestamp', timestamp.toString());
+      formData.append('signature', signature);
+      formData.append('folder', folder);
+
+      const uploadUrl = `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`;
+
+      const response = await fetch(uploadUrl, {
+        method: 'POST',
+        body: formData
+      });
+
+      if (!response.ok) {
+        throw new Error(`Erro no upload: ${response.statusText}`);
+      }
+
+      const result = await response.json();
+      this.formFotoUrl.set(result.secure_url);
+
+    } catch (err: any) {
+      this.uploadErro.set(err.message || 'Falha no upload da imagem. Tente novamente.');
+      this.fotoPreviewUrl.set('');
+      console.error(err);
+    } finally {
+      this.isUploadingFoto.set(false);
+      input.value = '';
+    }
   }
-}
 
   removerFoto() {
     this.resetarFoto();
@@ -314,7 +332,8 @@ export class DashboardComponent implements OnInit {
         sku_simples_id: prod.id,
         nome_produto: prod.nome_produto,
         quantidade_necessaria: qtd,
-        estoque_atual: prod.estoque_fisico
+        estoque_atual: prod.estoque_fisico,
+        custo_unitario: prod.custo_unitario || 0
       });
     }
 
@@ -348,6 +367,7 @@ export class DashboardComponent implements OnInit {
     let produtoIdParaKit = this.formId();
 
     let estoqueCalculadoParaSalvar = this.formEstoque();
+    let custoParaSalvar = this.formCusto();
 
     if (this.formTipo() === 'KIT') {
       let maxKits = Infinity;
@@ -356,6 +376,7 @@ export class DashboardComponent implements OnInit {
         if (possiveis < maxKits) maxKits = possiveis;
       });
       estoqueCalculadoParaSalvar = maxKits === Infinity ? 0 : maxKits;
+      custoParaSalvar = this.custoKitCalculado();
     }
 
     const dadosParaSalvar = {
@@ -363,6 +384,7 @@ export class DashboardComponent implements OnInit {
       nome_produto: this.formNome(),
       tipo: this.formTipo(),
       estoque_fisico: estoqueCalculadoParaSalvar,
+      custo_unitario: custoParaSalvar,
       foto_url: this.formFotoUrl() || null
     };
 
