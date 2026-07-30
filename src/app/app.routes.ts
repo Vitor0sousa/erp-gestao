@@ -5,6 +5,7 @@ import { AnunciosComponent } from './pages/anuncios/anuncios';
 import { LayoutComponent } from './layout/layout';
 import { AssistenteIaComponent } from './pages/assistente/assistente';
 import { DashboardFinanceiroComponent } from './pages/dashboard-financeiro/dashboard-financeiro';
+import { CalculadoraPrecosComponent } from './calculadora-precos/calculadora-precos';
 
 export const routes: Routes = [
   { path: 'login', component: LoginComponent },
@@ -19,7 +20,9 @@ export const routes: Routes = [
       { path: 'dashboard', component: DashboardComponent },
       { path: 'anuncios',  component: AnunciosComponent  },
       {path: 'assitente', component:AssistenteIaComponent},
-      { path: 'financeiro', component: DashboardFinanceiroComponent }
+      { path: 'financeiro', component: DashboardFinanceiroComponent },
+      { path: 'calculadora', component: CalculadoraPrecosComponent }
+
     ]
   }
 ];

@@ -76,6 +76,15 @@
         <span style="font-weight: bold;">Gerador IA</span>
       }
     </a>
+    <a routerLink="/calculadora" routerLinkActive="active" class="nav-item" [title]="recolhido() ? 'Calculadora de Preços' : ''">
+  <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+      d="M9 7h6m0 3h-6m-2 9h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2zm2-9v6m4-6v6"/>
+  </svg>
+  @if (!recolhido()) {
+    <span>Calculadora</span>
+  }
+</a>
 
   </nav>
 

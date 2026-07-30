@@ -1,0 +1,149 @@
+<div class="main-content">
+
+  <header class="topbar">
+    <h1>Calculadora de Preços</h1>
+    <div class="user-profile">
+      <span>Painel Administrativo</span>
+      <div class="avatar">V</div>
+    </div>
+  </header>
+
+  <div class="content-area">
+
+    <!-- Busca de produto -->
+    <div class="card-secao">
+      <label class="label-secao">Produto</label>
+
+      @if (!produtoSelecionado()) {
+        <div class="autocomplete-container">
+          <input type="text" [(ngModel)]="buscaProduto"
+            placeholder="🔍 Digite o SKU ou nome do produto..." class="search-input">
+          @if (resultadosBusca().length > 0) {
+            <ul class="autocomplete-dropdown">
+              @for (prod of resultadosBusca(); track prod.id) {
+                <li class="autocomplete-item" (click)="selecionarProduto(prod)">
+                  <div class="item-info"><strong>{{ prod.sku_interno }}</strong> - {{ prod.nome_produto }}</div>
+                  <div class="item-custo">Custo: R$ {{ prod.custo_unitario | number:'1.2-2' }}</div>
+                </li>
+              }
+            </ul>
+          }
+        </div>
+      } @else {
+        <div class="produto-selecionado-box">
+          <div class="produto-selecionado-info">
+            <span class="produto-selecionado-sku">{{ produtoSelecionado()!.sku_interno }}</span>
+            <span class="produto-selecionado-nome">{{ produtoSelecionado()!.nome_produto }}</span>
+          </div>
+          <button class="btn-trocar" (click)="trocarProduto()">Trocar produto</button>
+        </div>
+      }
+    </div>
+
+    @if (produtoSelecionado()) {
+
+      <div class="calc-layout">
+
+        <!-- Coluna de inputs -->
+        <div class="card-secao">
+          <label class="label-secao">Parâmetros</label>
+
+          <div class="campo-linha">
+            <label>Custo do Produto (R$)</label>
+            <input type="number" step="0.01" min="0" [(ngModel)]="custoProduto" class="input-valor">
+          </div>
+
+          <div class="campo-linha">
+            <label>Tipo de Anúncio</label>
+            <div class="toggle-anuncio">
+              <button class="toggle-btn" [class.ativo]="tipoAnuncio() === 'CLASSICO'" (click)="selecionarTipoAnuncio('CLASSICO')">
+                Clássico <small>(14%)</small>
+              </button>
+              <button class="toggle-btn" [class.ativo]="tipoAnuncio() === 'PREMIUM'" (click)="selecionarTipoAnuncio('PREMIUM')">
+                Premium <small>(19%)</small>
+              </button>
+            </div>
+          </div>
+
+          <div class="campo-linha">
+            <label>Preço de Venda (R$)</label>
+            <input type="number" step="0.01" min="0" [(ngModel)]="precoVenda" class="input-valor input-valor-destaque">
+          </div>
+
+          <div class="campo-linha frete-linha">
+            <div class="frete-header">
+              <label>Frete Grátis</label>
+              @if (freteGratisObrigatorio()) {
+                <span class="badge-obrigatorio">Obrigatório (preço ≥ R$79)</span>
+              }
+            </div>
+            <button
+              class="frete-toggle"
+              [class.ativo]="freteGratisAtivo()"
+              [class.travado]="freteGratisObrigatorio()"
+              (click)="toggleFreteGratisManual()">
+              <span class="frete-toggle-bolinha"></span>
+            </button>
+          </div>
+
+          @if (freteGratisAtivo()) {
+            <div class="campo-linha">
+              <label>Custo de Frete Estimado (R$)</label>
+              <input type="number" step="0.01" min="0" [(ngModel)]="custoFreteEstimado" class="input-valor">
+            </div>
+          }
+        </div>
+
+        <!-- Coluna de resultado -->
+        <div class="card-secao resultado-card">
+          <label class="label-secao">Resultado</label>
+
+          <div class="linha-resultado">
+            <span>Comissão ML ({{ comissaoPercentual() }}%)</span>
+            <span class="valor-negativo">- R$ {{ comissaoValor() | number:'1.2-2' }}</span>
+          </div>
+
+          @if (custoFixo() > 0) {
+            <div class="linha-resultado">
+              <span>Custo Fixo (abaixo de R$79)</span>
+              <span class="valor-negativo">- R$ {{ custoFixo() | number:'1.2-2' }}</span>
+            </div>
+          }
+
+          @if (custoFrete() > 0) {
+            <div class="linha-resultado">
+              <span>Custo de Frete</span>
+              <span class="valor-negativo">- R$ {{ custoFrete() | number:'1.2-2' }}</span>
+            </div>
+          }
+
+          <div class="linha-resultado">
+            <span>Custo do Produto</span>
+            <span class="valor-negativo">- R$ {{ custoProduto() | number:'1.2-2' }}</span>
+          </div>
+
+          <div class="divisor"></div>
+
+          <div class="linha-resultado linha-lucro">
+            <span>Lucro Líquido</span>
+            <span [class.valor-positivo]="lucro() >= 0" [class.valor-negativo]="lucro() < 0">
+              R$ {{ lucro() | number:'1.2-2' }}
+            </span>
+          </div>
+
+          <div class="margem-box" [class.margem-boa]="statusMargem() === 'boa'"
+            [class.margem-apertada]="statusMargem() === 'apertada'"
+            [class.margem-ruim]="statusMargem() === 'ruim'">
+            <span class="margem-label">Margem</span>
+            <span class="margem-valor">{{ margem() | number:'1.1-1' }}%</span>
+          </div>
+        </div>
+
+      </div>
+
+    } @else {
+      <div class="empty-state">Busque um produto acima para começar a simular o preço.</div>
+    }
+
+  </div>
+</div>

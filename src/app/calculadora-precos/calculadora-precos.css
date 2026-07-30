@@ -1,0 +1,224 @@
+.main-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+}
+
+.topbar {
+  height: 64px;
+  background-color: white;
+  border-bottom: 1px solid #e5e7eb;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 2rem;
+}
+.topbar h1 { font-size: 1.25rem; font-weight: 600; color: #1f2937; margin: 0; }
+.user-profile { display: flex; align-items: center; gap: 1rem; color: #6b7280; font-size: 0.875rem; }
+.avatar { width: 32px; height: 32px; background-color: #dbeafe; color: #1d4ed8; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; }
+
+.content-area { padding: 2rem; max-width: 1000px; }
+
+/* ── Cards de seção ── */
+.card-secao {
+  background-color: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05);
+}
+
+.label-secao {
+  display: block;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  margin-bottom: 1rem;
+}
+
+/* ── Busca de produto (mesmo padrão visual do modal de kit) ── */
+.autocomplete-container { position: relative; width: 100%; }
+.search-input { width: 100%; padding: 0.85rem 1rem; border: 2px solid #cbd5e1; border-radius: 6px; font-size: 1rem; box-sizing: border-box; transition: border-color 0.2s; }
+.search-input:focus { border-color: #3b82f6; outline: none; }
+
+.autocomplete-dropdown { position: absolute; top: 100%; left: 0; width: 100%; background: white; border: 1px solid #cbd5e1; border-radius: 6px; margin-top: 4px; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); z-index: 50; max-height: 280px; overflow-y: auto; list-style: none; padding: 0; }
+.autocomplete-item { padding: 0.85rem 1rem; border-bottom: 1px solid #f1f5f9; cursor: pointer; display: flex; justify-content: space-between; align-items: center; transition: background-color 0.15s; }
+.autocomplete-item:last-child { border-bottom: none; }
+.autocomplete-item:hover { background-color: #eff6ff; }
+.autocomplete-item .item-info { font-size: 0.95rem; color: #333; }
+.autocomplete-item .item-custo { font-size: 0.85rem; color: #059669; font-weight: 600; }
+
+.produto-selecionado-box {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #eff6ff;
+  border: 1px solid #bfdbfe;
+  padding: 1rem;
+  border-radius: 6px;
+}
+.produto-selecionado-info { display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; }
+.produto-selecionado-sku { font-weight: 700; color: #1e40af; font-size: 1rem; }
+.produto-selecionado-nome { font-size: 0.95rem; color: #1e3a8a; }
+.btn-trocar { background: transparent; border: none; color: #ef4444; font-size: 0.85rem; cursor: pointer; text-decoration: underline; font-weight: 500; }
+.btn-trocar:hover { color: #b91c1c; }
+
+/* ── Layout de duas colunas ── */
+.calc-layout {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+  align-items: start;
+}
+
+@media (max-width: 800px) {
+  .calc-layout { grid-template-columns: 1fr; }
+}
+
+/* ── Campos de input ── */
+.campo-linha {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  margin-bottom: 1.2rem;
+}
+.campo-linha:last-child { margin-bottom: 0; }
+.campo-linha label { font-size: 0.875rem; font-weight: 500; color: #374151; }
+
+.input-valor {
+  padding: 0.6rem 0.75rem;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 1rem;
+  box-sizing: border-box;
+}
+.input-valor:focus { outline: none; border-color: #2563eb; box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1); }
+.input-valor-destaque {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #1d4ed8;
+}
+
+/* ── Toggle Clássico/Premium ── */
+.toggle-anuncio {
+  display: flex;
+  gap: 0.5rem;
+}
+.toggle-btn {
+  flex: 1;
+  padding: 0.6rem;
+  border: 1px solid #d1d5db;
+  background-color: white;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: #6b7280;
+  transition: all 0.15s;
+}
+.toggle-btn small { opacity: 0.75; }
+.toggle-btn:hover { background-color: #f9fafb; }
+.toggle-btn.ativo {
+  background-color: #2563eb;
+  border-color: #2563eb;
+  color: white;
+}
+
+/* ── Toggle de frete grátis ── */
+.frete-linha { flex-direction: row; justify-content: space-between; align-items: center; }
+.frete-header { display: flex; flex-direction: column; gap: 0.3rem; }
+.badge-obrigatorio {
+  font-size: 0.7rem;
+  color: #b45309;
+  background-color: #fef3c7;
+  border: 1px solid #fde68a;
+  padding: 0.15rem 0.5rem;
+  border-radius: 999px;
+  width: fit-content;
+}
+
+.frete-toggle {
+  width: 46px;
+  height: 26px;
+  border-radius: 999px;
+  background-color: #d1d5db;
+  border: none;
+  cursor: pointer;
+  position: relative;
+  transition: background-color 0.2s;
+  flex-shrink: 0;
+}
+.frete-toggle.ativo { background-color: #16a34a; }
+.frete-toggle.travado { cursor: not-allowed; opacity: 0.85; }
+.frete-toggle-bolinha {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background-color: white;
+  transition: transform 0.2s;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.2);
+}
+.frete-toggle.ativo .frete-toggle-bolinha { transform: translateX(20px); }
+
+/* ── Resultado ── */
+.resultado-card { background-color: #f8fafc; }
+
+.linha-resultado {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem 0;
+  font-size: 0.95rem;
+  color: #374151;
+}
+
+.valor-negativo { color: #dc2626; font-weight: 600; }
+.valor-positivo { color: #16a34a; font-weight: 700; }
+
+.divisor {
+  height: 1px;
+  background-color: #e5e7eb;
+  margin: 0.5rem 0;
+}
+
+.linha-lucro {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #111827;
+  padding: 0.6rem 0;
+}
+
+.margem-box {
+  margin-top: 1rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.9rem 1.1rem;
+  border-radius: 8px;
+  border: 1px solid;
+}
+
+.margem-label { font-size: 0.85rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.4px; }
+.margem-valor { font-size: 1.4rem; font-weight: 700; }
+
+.margem-boa { background-color: #f0fdf4; border-color: #bbf7d0; color: #15803d; }
+.margem-apertada { background-color: #fffbeb; border-color: #fde68a; color: #b45309; }
+.margem-ruim { background-color: #fef2f2; border-color: #fecaca; color: #b91c1c; }
+
+/* ── Estado vazio ── */
+.empty-state {
+  padding: 3rem;
+  text-align: center;
+  color: #6b7280;
+  background-color: white;
+  border-radius: 12px;
+  border: 1px dashed #cbd5e1;
+}
