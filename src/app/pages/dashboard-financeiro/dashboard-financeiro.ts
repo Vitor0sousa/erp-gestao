@@ -15,6 +15,8 @@ interface DashboardFinanceiroData {
   faturamento_bruto: number;
   numero_vendas: number;
   custo_total: number;
+  taxa_ml_total: number;
+  frete_total: number;
   lucro_liquido: number;
   ticket_medio: number;
   item_mais_vendido: ItemMaisVendido | null;

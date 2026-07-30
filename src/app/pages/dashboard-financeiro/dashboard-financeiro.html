@@ -34,16 +34,11 @@
       <div class="error-state">{{ errorMessage() }}</div>
     } @else if (dados()) {
 
-      <!-- Grid de KPIs -->
+      <!-- Grid de KPIs principais -->
       <div class="kpi-grid">
         <div class="kpi-card">
           <span class="kpi-label">Faturamento Bruto</span>
           <span class="kpi-valor kpi-azul">R$ {{ dados()!.faturamento_bruto | number:'1.2-2' }}</span>
-        </div>
-
-        <div class="kpi-card">
-          <span class="kpi-label">Custo Total</span>
-          <span class="kpi-valor kpi-laranja">R$ {{ dados()!.custo_total | number:'1.2-2' }}</span>
         </div>
 
         <div class="kpi-card">
@@ -61,6 +56,25 @@
         <div class="kpi-card">
           <span class="kpi-label">Ticket Médio</span>
           <span class="kpi-valor kpi-azul">R$ {{ dados()!.ticket_medio | number:'1.2-2' }}</span>
+        </div>
+      </div>
+
+      <!-- Grid de custos que compõem o lucro líquido -->
+      <h3 class="section-title custos-title">Composição dos Custos</h3>
+      <div class="kpi-grid kpi-grid-custos">
+        <div class="kpi-card kpi-card-custo">
+          <span class="kpi-label">Custo de Produto</span>
+          <span class="kpi-valor kpi-laranja">R$ {{ dados()!.custo_total | number:'1.2-2' }}</span>
+        </div>
+
+        <div class="kpi-card kpi-card-custo">
+          <span class="kpi-label">Taxas Mercado Livre</span>
+          <span class="kpi-valor kpi-vermelho-suave">R$ {{ dados()!.taxa_ml_total | number:'1.2-2' }}</span>
+        </div>
+
+        <div class="kpi-card kpi-card-custo">
+          <span class="kpi-label">Frete (custo real)</span>
+          <span class="kpi-valor kpi-vermelho-suave">R$ {{ dados()!.frete_total | number:'1.2-2' }}</span>
         </div>
       </div>
 

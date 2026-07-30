@@ -74,7 +74,7 @@
 }
 .error-state { color: #dc2626; }
 
-/* ── Grid de KPIs ── */
+/* ── Grid de KPIs principais ── */
 .kpi-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -113,6 +113,32 @@
 .kpi-vermelho { color: #dc2626; }
 .kpi-roxo { color: #7c3aed; }
 
+/* ── Sub-seção de composição de custos ── */
+.custos-title {
+  margin-top: -0.5rem;
+}
+
+.kpi-grid-custos {
+  margin-bottom: 2rem;
+}
+
+.kpi-card-custo {
+  background-color: #fefaf7;
+  border-color: #fde5d0;
+}
+
+.kpi-vermelho-suave {
+  color: #b45309;
+}
+
+/* ── Título de seção ── */
+.section-title {
+  margin: 0 0 1rem 0;
+  font-size: 1rem;
+  color: #111827;
+  font-weight: 600;
+}
+
 /* ── Item mais vendido ── */
 .mais-vendido-section {
   background-color: white;
@@ -120,13 +146,6 @@
   border-radius: 12px;
   padding: 1.5rem;
   box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05);
-}
-
-.section-title {
-  margin: 0 0 1rem 0;
-  font-size: 1rem;
-  color: #111827;
-  font-weight: 600;
 }
 
 .produto-mini-card {
