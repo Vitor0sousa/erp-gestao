@@ -34,6 +34,16 @@ interface ComposicaoItem {
 })
 export class DashboardComponent implements OnInit {
   produtos = signal<ProdutoInterno[]>([]);
+  buscaProdutos = signal('');
+  produtosFiltrados = computed(() => {
+    const termo = this.buscaProdutos().toLowerCase().trim();
+    if (!termo) return this.produtos();
+
+    return this.produtos().filter(produto =>
+      produto.nome_produto?.toLowerCase().includes(termo) ||
+      produto.sku_interno?.toLowerCase().includes(termo)
+    );
+  });
   isLoading = signal(true);
   errorMessage = signal('');
   produtosSimples = computed(() => this.produtos().filter(p => p.tipo === 'SIMPLES'));
@@ -116,6 +126,7 @@ export class DashboardComponent implements OnInit {
 
   async carregarProdutos() {
     this.isLoading.set(true);
+    this.errorMessage.set('');
     try {
       const { data: prods, error: errProds } = await this.supabase
         .from('produtos_internos')

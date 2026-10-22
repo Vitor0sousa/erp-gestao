@@ -6,6 +6,7 @@ import { LayoutComponent } from './layout/layout';
 import { AssistenteIaComponent } from './pages/assistente/assistente';
 import { DashboardFinanceiroComponent } from './pages/dashboard-financeiro/dashboard-financeiro';
 import { CalculadoraPrecosComponent } from './calculadora-precos/calculadora-precos';
+import { authGuard } from './auth/auth.guard';
 
 export const routes: Routes = [
   { path: 'login', component: LoginComponent },
@@ -16,6 +17,7 @@ export const routes: Routes = [
   {
     path: '',
     component: LayoutComponent,
+    canActivateChild: [authGuard],
     children: [
       { path: 'dashboard', component: DashboardComponent },
       { path: 'anuncios',  component: AnunciosComponent  },

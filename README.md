@@ -52,7 +52,7 @@ src/
 angular.json                 # Configuração de build e desenvolvimento
 ```
 
-As implementações das Edge Functions, o esquema SQL e as políticas do banco não estão versionados neste repositório. Para utilizar todas as funcionalidades, é necessário um projeto Supabase com esses recursos configurados.
+As implementações das Edge Functions, o esquema SQL e as políticas do banco não estão versionados neste repositório. Para utilizar todas as funcionalidades, é necessário um projeto Supabase com esses recursos configurados. A pasta local `supabase/` é ignorada pelo Git.
 
 ## Rotas
 
@@ -143,6 +143,16 @@ Configure as variáveis nos ambientes de publicação correspondentes, como Prod
 **`api/cloudinary-sign.js`** é o backend para autorizar uploads. Durante o envio de uma foto, o dashboard faz um POST para `/api/cloudinary-sign` com o token da sessão. A função valida esse token no Supabase e retorna assinatura, timestamp e parâmetros públicos do Cloudinary. O navegador envia a imagem diretamente ao Cloudinary e salva a URL no produto. O segredo permanece no servidor.
 
 ## Integrações com o Supabase
+
+### Listagem de produtos
+
+“Meus Produtos” mantém a ordenação por nome utilizada na consulta original.
+
+A barra de pesquisa filtra por trechos do nome ou SKU, sem diferenciar maiúsculas e
+minúsculas, preservando a ordem da lista. Limpar o campo exibe todos os produtos
+carregados novamente.
+
+### Dados e funções
 
 O frontend utiliza estas tabelas:
 

@@ -43,3 +43,4 @@ __screenshots__/
 Thumbs.db
 # environments
 src/environments/
+/supabase/

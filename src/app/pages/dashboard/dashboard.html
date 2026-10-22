@@ -16,7 +16,8 @@
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
             d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
         </svg>
-        <input type="text" placeholder="Buscar por SKU ou Nome...">
+        <input type="search" [(ngModel)]="buscaProdutos"
+          aria-label="Buscar produtos por SKU ou nome" placeholder="Buscar por SKU ou Nome...">
       </div>
       <button class="btn-new" (click)="abrirModalNovo()">
         <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -35,6 +36,8 @@
         <div class="empty-state">
           Nenhum produto encontrado. Clique em "Novo Produto" para começar.
         </div>
+      } @else if (produtosFiltrados().length === 0) {
+        <div class="empty-state">Nenhum produto encontrado para esta busca.</div>
       } @else {
         <table class="data-table">
           <thead>
@@ -48,7 +51,7 @@
             </tr>
           </thead>
           <tbody>
-            @for (produto of produtos(); track produto.id) {
+            @for (produto of produtosFiltrados(); track produto.id) {
               <tr>
                 <td class="col-foto">
                   @if (produto.foto_url) {
