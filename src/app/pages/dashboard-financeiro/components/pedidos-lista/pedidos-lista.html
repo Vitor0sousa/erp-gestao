@@ -1,0 +1,80 @@
+<section class="pedidos-section" aria-labelledby="titulo-lista-pedidos">
+  <div class="section-header">
+    <div><h2 id="titulo-lista-pedidos">Pedidos do Mercado Livre</h2><p>Uma linha por pedido · Horários de Brasília · Valores em BRL</p></div>
+    @if (pagina()) { <span class="contagem">{{ pagina()!.total }} pedidos</span> }
+  </div>
+  <form class="filtros" (ngSubmit)="aplicarBusca()">
+    <div class="campo campo-busca">
+      <label for="busca-pedidos">Buscar pedido, título ou SKU</label>
+      <input id="busca-pedidos" name="busca" type="search" maxlength="150" [(ngModel)]="busca" placeholder="Número do pedido, título ou SKU">
+    </div>
+    <div class="campo">
+      <label for="conta-pedidos">Conta</label>
+      <select id="conta-pedidos" name="conta" [ngModel]="filtros?.conta || ''" (ngModelChange)="contaAlterada.emit($event)" [disabled]="carregando()">
+        <option value="">Todas as contas</option>
+        @for (conta of pagina()?.contas || []; track conta.id) { <option [value]="conta.id">{{ conta.nome_conta }}</option> }
+      </select>
+    </div>
+    <div class="campo">
+      <label for="status-pedidos">Status</label>
+      <select id="status-pedidos" name="status" [(ngModel)]="statusSelecionado">
+        <option value="paid">Pagos</option><option value="cancelled">Cancelados</option>
+        <option value="confirmed">Confirmados</option><option value="payment_required">Aguardando pagamento</option>
+        <option value="payment_in_process">Pagamento em processamento</option><option value="partially_paid">Parcialmente pagos</option>
+        <option value="invalid">Inválidos</option><option value="all">Todos os status</option>
+      </select>
+    </div>
+    <button type="submit" class="botao-primario" [disabled]="carregando()">Filtrar pedidos</button>
+  </form>
+  <p class="nota">O período e a conta são compartilhados com os indicadores. A busca e o status filtram somente esta lista; os indicadores consideram pedidos pagos.</p>
+  <p class="nota">Lucro estimado = valor vendido − custo atual do produto/kit × quantidade − taxas − frete importados. Custos zero sem validação e dados ausentes impedem o cálculo.</p>
+  <div [attr.aria-busy]="carregando()">
+    @if (carregando()) {
+      <div class="estado" role="status">Carregando pedidos...</div>
+    } @else if (erro()) {
+      <div class="estado erro" role="alert"><p>{{ erro() }}</p><button type="button" (click)="carregar()">Tentar novamente</button></div>
+    } @else if (pagina(); as lista) {
+      @if (lista.pedidos.length === 0) {
+        <div class="estado">Nenhum pedido encontrado para o período e os filtros aplicados.</div>
+      } @else {
+        <div class="tabela-container">
+          <table>
+            <caption class="sr-only">Pedidos do Mercado Livre, do mais recente ao mais antigo</caption>
+            <thead><tr><th scope="col">Produto</th><th scope="col">Pedido</th><th scope="col">Quantidade</th><th scope="col">Venda</th><th scope="col">Lucro</th><th scope="col">Margem</th><th scope="col"><span class="sr-only">Ações</span></th></tr></thead>
+            <tbody>
+              @for (pedido of lista.pedidos; track pedido.id) {
+                <tr>
+                  <td data-label="Produto">
+                    <div class="produto">
+                      <div class="foto"><app-produto-imagem [url]="pedido.foto_url" [titulo]="pedido.titulo" /></div>
+                      <div class="produto-texto"><strong class="titulo-produto">{{ pedido.titulo }}</strong>
+                        @if (pedido.numero_itens > 1) { <small>+ {{ pedido.numero_itens - 1 }} outros itens</small> }
+                        <small>SKU: {{ pedido.sku || 'Não identificado' }}</small>
+                        @if (pedido.foto_url) { <small>Imagem atual do anúncio/cadastro</small> }
+                      </div>
+                    </div>
+                  </td>
+                  <td data-label="Pedido"><strong>#{{ pedido.numero }}</strong><small><time [attr.datetime]="pedido.data_venda">{{ dataVenda(pedido.data_venda) }}</time></small><small>{{ pedido.conta }}</small><span class="badge">{{ status(pedido.status) }}</span></td>
+                  <td data-label="Quantidade">{{ pedido.quantidade ?? 'Não disponível' }}<small>{{ pedido.numero_itens }} linhas</small></td>
+                  <td data-label="Venda" class="valor">{{ moeda(pedido.receita) }}</td>
+                  <td data-label="Lucro" class="valor" [class.positivo]="pedido.lucro !== null && pedido.lucro > 0" [class.negativo]="pedido.lucro !== null && pedido.lucro < 0">
+                    {{ moeda(pedido.lucro) }}<small>{{ resultado(pedido.lucro) }}</small><span class="qualidade" [title]="pedido.pendencias.join(' ')">{{ qualidade(pedido.qualidade) }}</span>
+                  </td>
+                  <td data-label="Margem" class="valor">{{ margem(pedido.margem) }}</td>
+                  <td class="acao"><button type="button" (click)="pedidoSelecionado.set(pedido.id)" [attr.aria-label]="'Ver detalhes do pedido ' + pedido.numero">Ver detalhes</button></td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+      <nav class="paginacao" aria-label="Paginação de pedidos">
+        <span aria-live="polite">Página {{ lista.pagina }} de {{ lista.total_paginas }} · {{ lista.total }} pedidos</span>
+        <div><button type="button" (click)="carregar(lista.pagina - 1)" [disabled]="lista.pagina <= 1 || carregando()">Anterior</button><button type="button" (click)="carregar(lista.pagina + 1)" [disabled]="lista.pagina >= lista.total_paginas || carregando()">Próxima</button></div>
+      </nav>
+    }
+  </div>
+</section>
+@if (pedidoSelecionado(); as id) {
+  <app-pedido-detalhes [pedidoId]="id" (fechar)="pedidoSelecionado.set(null)" />
+}

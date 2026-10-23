@@ -1,0 +1,66 @@
+<dialog #dialogo aria-labelledby="titulo-pedido" aria-modal="true" (cancel)="cancelar($event)">
+  <header class="modal-header">
+    <div>
+      <p class="eyebrow">Mercado Livre</p>
+      <h2 id="titulo-pedido">{{ detalhe() ? 'Pedido #' + detalhe()!.numero : 'Detalhes do pedido' }}</h2>
+    </div>
+    <button type="button" class="fechar" aria-label="Fechar detalhes do pedido" autofocus (click)="fechar.emit()">×</button>
+  </header>
+  <div class="modal-body" [attr.aria-busy]="carregando()">
+    @if (carregando()) {
+      <p role="status">Carregando detalhes...</p>
+    } @else if (erro()) {
+      <div role="alert"><p>{{ erro() }}</p><button type="button" (click)="carregar()">Tentar novamente</button></div>
+    } @else if (detalhe(); as pedido) {
+      <div class="cabecalho-pedido">
+        <span>{{ pedido.conta }}</span><time [attr.datetime]="pedido.data_venda">{{ dataVenda(pedido.data_venda) }}</time>
+        <span class="badge">{{ status(pedido.status) }}</span>
+        <span class="badge qualidade">{{ qualidade(pedido.qualidade) }}</span>
+      </div>
+      <h3>Itens vendidos</h3>
+      @for (item of pedido.itens; track item.id) {
+        <article class="item">
+          <div class="foto"><app-produto-imagem [url]="item.foto_url" [titulo]="item.titulo" /></div>
+          <div class="item-info">
+            <h4>{{ item.titulo }}</h4>
+            <p>SKU: {{ item.sku || 'Não identificado' }} · {{ item.tipo === 'KIT' ? 'Kit' : 'Produto' }}</p>
+            <p>Anúncio: {{ item.anuncio_id || 'Não disponível' }} · Variação: {{ item.variacao_id || 'Não disponível' }}</p>
+            <p>{{ item.origem_imagem || 'Imagem não disponível' }}. Título do cadastro/anúncio atual.</p>
+            <dl class="item-valores">
+              <div><dt>Quantidade</dt><dd>{{ item.quantidade ?? 'Não disponível' }}</dd></div>
+              <div><dt>Preço unitário da venda</dt><dd>{{ moeda(item.preco_unitario) }}</dd></div>
+              <div><dt>Total vendido da linha</dt><dd>{{ moeda(item.total_venda) }}</dd></div>
+              <div><dt>Custo unitário atual</dt><dd>{{ moeda(item.custo_unitario) }}</dd></div>
+              <div><dt>Custo total estimado</dt><dd>{{ moeda(item.custo_total) }}</dd></div>
+            </dl>
+            @if (item.tipo === 'KIT') {
+              <p class="nota">Custo pronto do kit no cadastro de produtos, sem recalcular componentes.</p>
+            }
+          </div>
+        </article>
+      } @empty {
+        <p class="aviso">Produto não identificado: este pedido ainda não possui itens importados.</p>
+      }
+      <h3>Composição financeira disponível</h3>
+      <dl class="composicao">
+        <div><dt>Valor vendido registrado</dt><dd>{{ moeda(pedido.receita) }}</dd></div>
+        <div><dt>Taxas Mercado Livre importadas</dt><dd>{{ moeda(pedido.taxa) }}</dd></div>
+        <div><dt>Frete do vendedor importado</dt><dd>{{ moeda(pedido.frete) }}</dd></div>
+        <div><dt>Valor após taxas e frete</dt><dd>{{ moeda(pedido.valor_apos_taxas_frete) }}</dd></div>
+        <div><dt>Custo estimado dos produtos</dt><dd>{{ moeda(pedido.custo) }}</dd></div>
+        <div class="total"><dt>{{ resultado(pedido.lucro) }}</dt><dd>{{ moeda(pedido.lucro) }}</dd></div>
+        <div><dt>Margem sobre a receita</dt><dd>{{ margem(pedido.margem) }}</dd></div>
+      </dl>
+      <p class="nota">Valor após taxas e frete não representa lucro nem confirmação de recebimento. A receita usa o total do pedido importado; descontos não são descontados novamente.</p>
+      <h3>Origem e pendências</h3>
+      <ul class="pendencias">@for (pendencia of pedido.pendencias; track pendencia) { <li>{{ pendencia }}</li> }</ul>
+      <dl class="composicao ausentes">
+        <div><dt>Última sincronização</dt><dd>{{ pedido.atualizado_em ? dataVenda(pedido.atualizado_em) : 'Não disponível' }}</dd></div>
+        <div><dt>Pagamentos e situação do recebimento</dt><dd>Não disponíveis</dd></div>
+        <div><dt>Envio e rastreamento</dt><dd>Não disponíveis</dd></div>
+        <div><dt>Descontos, impostos, estornos e ajustes</dt><dd>Não disponíveis</dd></div>
+      </dl>
+    }
+  </div>
+  <footer><button type="button" (click)="fechar.emit()">Fechar detalhes</button></footer>
+</dialog>

@@ -8,7 +8,7 @@ Sistema web para gerenciar produtos, estoque e kits, acompanhar anúncios e resu
 - **Produtos:** cadastro e edição de SKU, nome, custo, estoque e foto.
 - **Kits:** composição com produtos simples, cálculo do custo e disponibilidade conforme os componentes.
 - **Anúncios:** consulta, busca e solicitação de sincronização com o Mercado Livre.
-- **Financeiro:** filtro por período, faturamento, vendas, custos, taxas, frete, lucro, ticket médio e item mais vendido.
+- **Financeiro:** indicadores de vendas pagas, custos, taxas e frete, lucro estimado, lista de pedidos paginada e detalhes financeiros em modal.
 - **Calculadora:** simulação de comissão, frete, lucro e margem para anúncios Clássico e Premium. Os parâmetros são estimativas definidas no código, sem consulta de tarifas em tempo real.
 - **Assistente de IA:** geração de rascunhos de anúncios com título, descrição e seleção de imagens, por uma Edge Function.
 
@@ -163,7 +163,64 @@ O frontend utiliza estas tabelas:
 | `meli_anuncios` | Dados dos anúncios sincronizados |
 | `anuncio_skus` | Associação entre anúncios e produtos |
 
-O dashboard financeiro chama a função SQL `obter_dashboard_financeiro`, passando `data_inicio` e `data_fim`.
+O Financeiro consulta o Supabase diretamente com `createClient`, a configuração de
+`environment` e chamadas `.from(...).select(...)`, seguindo o padrão das páginas de
+produtos e anúncios. As consultas ficam em `src/app/services/financeiro.service.ts`;
+os cálculos compartilhados em `src/app/models/calculo-financeiro.ts`. São usadas
+as permissões RLS da sessão atual, sem consultar credenciais das contas. A RPC
+anterior `obter_dashboard_financeiro` não foi alterada.
+
+### Pedidos do Mercado Livre no Financeiro
+
+A seção de pedidos aparece depois dos custos gerais e antes do item mais vendido.
+São exibidos 20 pedidos por página, do mais recente ao mais antigo, com busca por
+número, título ou SKU e filtros de status e conta. Datas usam `America/Sao_Paulo`;
+o último dia do período é incluído integralmente. A busca e o status afetam somente
+a lista; período e conta também afetam os indicadores de pedidos pagos.
+
+O modal apresenta todos os itens importados, origem das imagens, quantidades,
+custo unitário atual, total de custo e composição financeira. Suporta fechamento
+por Escape, foco contido e retorno ao botão de origem. Pedidos sem itens continuam
+visíveis. Preços históricos de linha, pagamentos, rastreamento, descontos e estornos
+não registrados aparecem como não disponíveis, sem usar preço atual do anúncio.
+
+O custo vem diretamente de `produtos_internos.custo_unitario`, inclusive para kits
+com custo pronto. Não se recalcula a composição do kit. Cada custo unitário é
+arredondado para centavos antes de multiplicar pela quantidade, e as somas usam
+centavos inteiros. A fórmula é `receita - custo dos produtos - taxa - frete`.
+`valor_total` é tratado como o total histórico importado do pedido; não há nova
+dedução de descontos, pois a base não registra sua decomposição.
+
+Esta é a versão de consulta com dados atuais prevista na especificação: não há
+snapshots de custo, reconciliação ou reprocessamento de pedidos. Todos os resultados
+calculáveis são estimados. Custo zero do cadastro, taxa/frete zero sem confirmação,
+valores inválidos ou ausência de itens impedem calcular o lucro; não são tratados
+como zero confirmado. O lucro agregado inclui apenas os pedidos calculáveis e a
+margem usa a receita desse mesmo conjunto, sem média das margens individuais.
+Os totais gerais de venda/taxa/frete consideram todos os pedidos pagos do período;
+custos incompletos não são apresentados como um total completo.
+
+O serviço Angular lê os registros do período em lotes e exibe páginas de 20 pedidos.
+Para não retornar indicadores truncados, rejeita consultas acima de 20 mil registros
+por conjunto e períodos maiores que 367 dias, solicitando um intervalo menor.
+Para volumes maiores, o próximo passo é uma consulta agregada paginada no Postgres.
+
+Não é necessário executar SQL ou alterar as Edge Functions para esta versão. O
+Financeiro usa `environment.supabaseUrl` e `environment.supabaseKey`, como as outras
+páginas, e pode ser executado com `ng serve` e os arquivos de ambiente configurados.
+Não depende de endpoint próprio na pasta `api/` nem de um servidor local adicional.
+
+A leitura não altera estoque, produtos, pedidos ou movimentos. Recuperação de itens
+ausentes, snapshots históricos, correção dos importadores e rateio de fretes por
+envio são evoluções separadas; não se deve apresentar os dados atuais como lucro
+confirmado. Alterar um custo cadastrado muda as estimativas de vendas anteriores.
+
+Referências da origem consultadas: [Orders](https://developers.mercadolivre.com.br/pt_br/gerenciamento-de-vendas/gerenciamento-de-vendas),
+[Provisões](https://developers.mercadolivre.com.br/pt_br/api-docs-pt-br/provisoes) e
+[Custos de envio](https://developers.mercadolivre.com.br/pt_br/mercadolideres-lojas-oficiais/mercado-envios-custos-e-cotacoes).
+A documentação descreve `sale_fee` por unidade e frete do vendedor em `senders[].cost`;
+esta versão apresenta os totais já persistidos, sem tentar corrigir taxas históricas
+ou confundir custo do comprador com o do vendedor.
 
 Os componentes de anúncios e assistente chamam, respectivamente:
 

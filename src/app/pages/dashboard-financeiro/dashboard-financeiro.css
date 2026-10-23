@@ -207,3 +207,21 @@
   border-radius: 999px;
   width: fit-content;
 }
+
+.periodo-bar { flex-wrap: wrap; }
+.periodo-nota, .periodo-ativo { font-size: .8rem; color: #64748b; line-height: 1.5; }
+.periodo-nota { margin: 0; flex: 1; min-width: 180px; }
+.periodo-ativo { margin: -.5rem 0 1.25rem; }
+.aviso-financeiro { background: #fffbeb; border: 1px solid #fde68a; color: #92400e; border-radius: 10px; padding: 1rem; margin: -1rem 0 2rem; font-size: .85rem; line-height: 1.6; }
+.aviso-financeiro p { margin: .4rem 0 0; }
+.kpi-card small { color: #64748b; line-height: 1.5; font-size: .75rem; }
+.kpi-valor { overflow-wrap: anywhere; }
+.error-state .btn-aplicar { margin: 1rem auto 0; }
+@media (max-width: 600px) {
+  .content-area { padding: 1rem; }
+  .topbar { padding: 0 1rem; }
+  .user-profile > span { display: none; }
+  .periodo-bar { padding: 1rem; }
+  .periodo-campo { flex: 1; min-width: 120px; }
+  .periodo-campo input { min-width: 0; width: 100%; box-sizing: border-box; }
+}
