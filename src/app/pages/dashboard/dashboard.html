@@ -66,7 +66,20 @@
                   }
                 </td>
                 <td class="font-mono">{{ produto.sku_interno }}</td>
-                <td class="font-bold">{{ produto.nome_produto }}</td>
+                <td class="font-bold">
+                  <span class="nome-produto">
+                    <span>{{ produto.nome_produto }}</span>
+                    @if ((produto.custo_unitario ?? 0) <= 0) {
+                      <span class="aviso-sem-custo" tabindex="0" role="img"
+                        title="Produto sem custo cadastrado" aria-label="Produto sem custo cadastrado">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"
+                            d="M12 9v4m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
+                        </svg>
+                      </span>
+                    }
+                  </span>
+                </td>
                 <td>
                   <span class="badge" [class.badge-kit]="produto.tipo === 'KIT'">
                     {{ produto.tipo || 'SIMPLES' }}

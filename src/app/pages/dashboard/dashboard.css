@@ -98,6 +98,11 @@
 .text-center { text-align: center; }
 .font-mono { font-family: monospace; color: #4b5563; }
 .font-bold { font-weight: 500; color: #111827; }
+.nome-produto { display: inline-flex; align-items: center; gap: 0.4rem; }
+.aviso-sem-custo { display: inline-flex; flex-shrink: 0; color: #dc2626; opacity: 0.75; cursor: help; border-radius: 3px; }
+.aviso-sem-custo svg { width: 15px; height: 15px; }
+.aviso-sem-custo:hover, .aviso-sem-custo:focus-visible { opacity: 1; }
+.aviso-sem-custo:focus-visible { outline: 2px solid #fca5a5; outline-offset: 3px; }
 .font-number { font-weight: 600; font-size: 1rem; }
 .text-red { color: #dc2626; }
 .badge { background-color: #e0e7ff; color: #4338ca; padding: 0.25rem 0.6rem; border-radius: 999px; font-size: 0.75rem; font-weight: 600; }
