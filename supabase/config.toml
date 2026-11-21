@@ -1,0 +1,6 @@
+project_id = "erp-gestao"
+
+# The marketplace redirects the browser without a Supabase JWT.
+# The callback validates and consumes the one-time OAuth state.
+[functions.meli-oauth-callback]
+verify_jwt = false

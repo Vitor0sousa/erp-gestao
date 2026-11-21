@@ -21,6 +21,17 @@
             <p role="alert">Não foi possível abrir a autorização. Tente novamente.</p>
           }
 
+          @if (statusOAuth === 'error') {
+            <p role="alert">Não foi possível concluir a autorização no Mercado Livre. Tente conectar a conta novamente.</p>
+          } @else if (statusOAuth === 'connected') {
+            @if (contaConfirmada(); as conta) {
+              <p role="status">Conta confirmada: {{ marketplace.nome }} · {{ conta.nome_conta?.trim() || 'Loja sem nome' }}.</p>
+            } @else if (!carregando() && !erroContas()) {
+              <p role="alert">A conta retornada ainda não aparece na lista.</p>
+              <button type="button" (click)="carregarContas()">Atualizar contas</button>
+            }
+          }
+
           @if (carregando()) {
             <p role="status">Carregando contas…</p>
           } @else if (erroContas()) {
@@ -33,7 +44,7 @@
             <ul>
               @for (conta of contas(); track conta.id) {
                 <li>
-                  <strong>{{ conta.nome_conta || 'Conta Mercado Livre' }}</strong>
+                  <strong>{{ marketplace.nome }} · {{ conta.nome_conta?.trim() || 'Loja sem nome' }}</strong>
                   <span>Vendedor {{ conta.seller_id_meli }}</span>
                 </li>
               }

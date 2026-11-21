@@ -1,4 +1,5 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { Component, computed, inject, OnInit, signal } from '@angular/core';
+import { ActivatedRoute } from '@angular/router';
 import { AUTH_CLIENT } from '../../auth/auth.guard';
 import { environment } from '../../../environments/environment';
 
@@ -30,6 +31,9 @@ type Marketplace = typeof MARKETPLACES[number];
 })
 export class IntegracoesComponent implements OnInit {
   private readonly supabase = inject(AUTH_CLIENT);
+  private readonly retorno = inject(ActivatedRoute).snapshot.queryParamMap;
+  readonly statusOAuth = this.retorno.get('status');
+  private readonly contaRetornoId = this.retorno.get('conta_id');
   readonly marketplaces = MARKETPLACES;
   readonly oauthHabilitado = 'meliOAuthEnabled' in environment && environment.meliOAuthEnabled === true;
   readonly contas = signal<ContaMarketplace[]>([]);
@@ -37,6 +41,9 @@ export class IntegracoesComponent implements OnInit {
   readonly conectando = signal(false);
   readonly erroContas = signal(false);
   readonly erroConexao = signal(false);
+  readonly contaConfirmada = computed(() => this.statusOAuth === 'connected'
+    ? this.contas().find(conta => conta.id === this.contaRetornoId)
+    : undefined);
 
   ngOnInit(): void {
     void this.carregarContas();
