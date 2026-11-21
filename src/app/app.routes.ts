@@ -23,6 +23,11 @@ export const routes: Routes = [
       { path: 'anuncios',  component: AnunciosComponent  },
       {path: 'assitente', component:AssistenteIaComponent},
       { path: 'financeiro', component: DashboardFinanceiroComponent },
+      {
+        path: 'integracoes',
+        loadComponent: () => import('./pages/integracoes/integracoes')
+          .then(module => module.IntegracoesComponent),
+      },
       { path: 'calculadora', component: CalculadoraPrecosComponent }
 
     ]

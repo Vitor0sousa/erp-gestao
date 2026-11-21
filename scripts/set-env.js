@@ -3,6 +3,7 @@ const path = require('path');
 
 const envFileContent = `export const environment = {
   production: true,
+  meliOAuthEnabled: ${process.env.MELI_OAUTH_ENABLED === 'true'},
   supabaseUrl: '${process.env.SUPABASE_URL}',
   supabaseKey: '${process.env.SUPABASE_ANON_KEY}',
   cloudinaryCloudName: '${process.env.CLOUDINARY_CLOUD_NAME}',

@@ -1,0 +1,13 @@
+.integracoes { padding: clamp(1rem, 4vw, 2rem); }
+h1 { margin: 0; font-size: 1.75rem; }
+header p { margin: .5rem 0 1.5rem; }
+.marketplaces { display: grid; gap: 1rem; max-width: 56rem; }
+section { border: 1px solid #cbd5e1; border-radius: .75rem; background: #fff; color: #0f172a; padding: 1.25rem; }
+h2 { font-size: 1.2rem; margin: 0; }
+h3 { font-size: .95rem; margin: 1rem 0 .5rem; }
+p, li span { color: #475569; }
+button { margin-top: .75rem; padding: .625rem 1rem; border: 0; border-radius: .5rem; background: #1d4ed8; color: #fff; font: inherit; cursor: pointer; }
+button:disabled { opacity: .65; cursor: progress; }
+ul { list-style: none; padding: 0; margin: 0; }
+li { display: grid; gap: .25rem; overflow-wrap: anywhere; padding: .625rem 0; border-top: 1px solid #e2e8f0; }
+[role='alert'] { color: #991b1b; }

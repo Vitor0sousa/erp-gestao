@@ -1,0 +1,48 @@
+<main class="integracoes">
+  <header>
+    <h1>Integrações</h1>
+    <p>Gerencie as contas dos seus marketplaces.</p>
+  </header>
+
+  <div class="marketplaces">
+    @for (marketplace of marketplaces; track marketplace.id) {
+      <section [attr.aria-labelledby]="marketplace.id">
+        <h2 [id]="marketplace.id">{{ marketplace.nome }}</h2>
+
+        @if (marketplace.id === 'mercado-livre') {
+          @if (oauthHabilitado) {
+            <button type="button" (click)="conectar(marketplace)" [disabled]="conectando()">
+              {{ conectando() ? 'Abrindo autorização…' : 'Conectar conta' }}
+            </button>
+          } @else {
+            <p>A conexão de novas contas estará disponível após a configuração do OAuth.</p>
+          }
+          @if (erroConexao()) {
+            <p role="alert">Não foi possível abrir a autorização. Tente novamente.</p>
+          }
+
+          @if (carregando()) {
+            <p role="status">Carregando contas…</p>
+          } @else if (erroContas()) {
+            <p role="alert">Não foi possível carregar as contas do Mercado Livre.</p>
+            <button type="button" (click)="carregarContas()">Tentar novamente</button>
+          } @else if (contas().length === 0) {
+            <p>Nenhuma conta cadastrada.</p>
+          } @else {
+            <h3>Contas cadastradas</h3>
+            <ul>
+              @for (conta of contas(); track conta.id) {
+                <li>
+                  <strong>{{ conta.nome_conta || 'Conta Mercado Livre' }}</strong>
+                  <span>Vendedor {{ conta.seller_id_meli }}</span>
+                </li>
+              }
+            </ul>
+          }
+        } @else {
+          <p>Em breve</p>
+        }
+      </section>
+    }
+  </div>
+</main>
