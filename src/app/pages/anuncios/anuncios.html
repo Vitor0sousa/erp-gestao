@@ -23,8 +23,18 @@
         </div>
       }
 
-      <!-- Botão sincronizar -->
-      <button class="btn-sync" (click)="sincronizarAnuncios()" [disabled]="isSyncing()">
+      @if (contas().length > 1) {
+        <select aria-label="Loja do Mercado Livre para sincronizar" [ngModel]="contaSync()"
+          (ngModelChange)="contaSync.set($event)" [disabled]="isSyncing()">
+          <option value="">Selecione a loja</option>
+          @for (conta of contas(); track conta.id) {
+            <option [value]="conta.id">{{ conta.nome_conta }}</option>
+          }
+        </select>
+      }
+
+      <button class="btn-sync" (click)="sincronizarAnuncios()"
+        [disabled]="isSyncing() || (contas().length > 1 && !contaSync())">
         <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"
              [class.spin]="isSyncing()">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"

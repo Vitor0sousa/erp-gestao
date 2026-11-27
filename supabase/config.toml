@@ -4,3 +4,13 @@ project_id = "erp-gestao"
 # The callback validates and consumes the one-time OAuth state.
 [functions.meli-oauth-callback]
 verify_jwt = false
+
+# Both listing sync routes validate the ERP session or service credential in the handler.
+[functions.clever-api]
+verify_jwt = false
+
+[functions.meli-sync]
+verify_jwt = false
+
+[functions.clever-service]
+verify_jwt = false

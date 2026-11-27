@@ -12,6 +12,11 @@ interface MeliAnuncio {
   conta_id: string;
 }
 
+interface MeliConta {
+  id: string;
+  nome_conta: string;
+}
+
 @Component({
   selector: 'app-anuncios',
   standalone: true,
@@ -26,6 +31,8 @@ export class AnunciosComponent implements OnInit {
   errorMessage   = signal('');
   syncMessage    = signal('');
   busca          = signal('');
+  contas         = signal<MeliConta[]>([]);
+  contaSync      = signal('');
 
   anunciosFiltrados = computed(() => {
     const termo = this.busca().toLowerCase().trim();
@@ -47,7 +54,14 @@ export class AnunciosComponent implements OnInit {
   }
 
   ngOnInit() {
-    this.carregarAnuncios();
+    void this.carregarAnuncios();
+    void this.carregarContas();
+  }
+
+  private async carregarContas() {
+    const { data, error } = await this.supabase.from('meli_contas')
+      .select('id,nome_conta').order('nome_conta').order('id');
+    if (!error) this.contas.set(data ?? []);
   }
 
   async carregarAnuncios() {
@@ -78,8 +92,12 @@ export class AnunciosComponent implements OnInit {
       const { data: { session } } = await this.supabase.auth.getSession();
       if (!session) throw new Error('Sessão inválida.');
 
+      const url = new URL(`${environment.supabaseUrl}/functions/v1/meli-sync`);
+      const contaId = this.contaSync() || (this.contas().length === 1 ? this.contas()[0].id : '');
+      if (contaId) url.searchParams.set('conta_id', contaId);
+
       const res = await fetch(
-        `${environment.supabaseUrl}/functions/v1/meli-sync`,
+        url,
         {
           method: 'POST',
           headers: {

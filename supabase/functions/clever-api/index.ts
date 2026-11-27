@@ -3,41 +3,62 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.0"
 import { loadMeliCredentials, refreshMeliCredentials } from "../_shared/meli-credentials.ts";
 
 serve(async (req) => {
+  const headers = {
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Methods': 'POST, OPTIONS',
+    'Access-Control-Allow-Headers': 'authorization, apikey, content-type, x-client-info',
+    'Cache-Control': 'no-store',
+  }
+  const fail = (status: number, erro: string) => Response.json({ ok: false, erro }, { status, headers })
+  if (req.method === 'OPTIONS') return new Response(null, { status: 204, headers })
+  if (req.method !== 'POST') return fail(405, 'Apenas POST permitido.')
+
   try {
     const supabaseUrl = Deno.env.get('SUPABASE_URL')
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
-    const supabase = createClient(supabaseUrl!, supabaseKey!)
+    if (!supabaseUrl || !supabaseKey) return fail(503, 'Sincronização indisponível.')
+    const bearer = req.headers.get('Authorization')?.match(/^Bearer (\S+)$/i)?.[1]
+    if (!bearer) return fail(401, 'Sessão inválida.')
 
-    const privateMode = Deno.env.get("MELI_PRIVATE_CREDENTIALS_ENABLED") === "true"
-    if ((privateMode || new URL(req.url).searchParams.has("conta_id")) && (!supabaseKey || req.headers.get("Authorization") !== `Bearer ${supabaseKey}`)) {
-      return new Response("Acesso restrito ao serviço.", { status: 401 })
+    const supabase = createClient(supabaseUrl, supabaseKey, { auth: { persistSession: false } })
+    const serviceCaller = bearer === supabaseKey
+    if (!serviceCaller) {
+      const { data, error } = await supabase.auth.getUser(bearer)
+      if (error || !data.user) return fail(401, 'Sessão inválida.')
+      if (data.user.id !== Deno.env.get('ERP_INTEGRATIONS_ADMIN_USER_ID')) {
+        return fail(403, 'A sincronização exige acesso de administrador das integrações.')
+      }
     }
 
+    const privateMode = Deno.env.get("MELI_PRIVATE_CREDENTIALS_ENABLED") === "true"
     const accountId = new URL(req.url).searchParams.get("conta_id")
-    if (privateMode && !accountId) {
-      return new Response("Informe a conta da sincronização.", { status: 400 })
+    if (accountId !== null && !/^[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}$/i.test(accountId)) {
+      return fail(400, 'Conta de sincronização inválida.')
     }
     const accounts = supabase.from("meli_contas").select("id,seller_id_meli")
     const { data: candidates, error: accountError } = accountId
       ? await accounts.eq("id", accountId)
       : await accounts.limit(2)
-    if (accountError) return new Response("Falha ao consultar conta.", { status: 500 })
-    if (!candidates?.length) return new Response("Nenhuma conta encontrada.", { status: 404 })
+    if (accountError) return fail(500, 'Falha ao consultar conta.')
+    if (!candidates?.length) return fail(404, 'Nenhuma conta encontrada.')
     if (candidates.length !== 1) {
-      return new Response("Informe a conta da sincronização.", { status: 400 })
+      return fail(400, 'Selecione a loja para sincronizar.')
     }
 
     const conta = candidates[0]
     const sellerId = conta.seller_id_meli
     const credentials = await loadMeliCredentials(supabase, conta.id, privateMode)
     let token = credentials.access_token
-    const meProbe = await fetch("https://api.mercadolibre.com/users/me", {
+    const probe = () => fetch("https://api.mercadolibre.com/users/me", {
       headers: { Authorization: `Bearer ${token}` },
     })
-    if (meProbe.status === 401) {
+    let me = await probe()
+    if (me.status === 401) {
       token = await refreshMeliCredentials(supabase, conta.id, privateMode, credentials.refresh_token)
-    } else if (!meProbe.ok) {
-      return new Response("Falha ao validar a conta no Mercado Livre.", { status: 502 })
+      me = await probe()
+    }
+    if (!me.ok || String((await me.json()).id) !== sellerId) {
+      return fail(502, 'Falha ao validar a conta no Mercado Livre.')
     }
 
     // ── 3. Busca TODOS os anúncios, paginando ──
@@ -54,14 +75,10 @@ serve(async (req) => {
     while (offset < total && offset < MAX_TOTAL_OFFSET) {
       const searchUrl = `https://api.mercadolibre.com/users/${sellerId}/items/search?limit=${PAGE_SIZE}&offset=${offset}`
       const searchRes = await fetch(searchUrl, { headers: { Authorization: `Bearer ${token}` } })
-      const searchData = await searchRes.json()
-
       if (!searchRes.ok) {
-        return new Response(
-          `Erro ao buscar anúncios (offset ${offset}): ${JSON.stringify(searchData)}`,
-          { status: searchRes.status }
-        )
+        return fail(502, 'Falha ao buscar anúncios no Mercado Livre.')
       }
+      const searchData = await searchRes.json()
 
       if (searchData.paging?.total !== undefined) {
         total = searchData.paging.total
@@ -75,7 +92,7 @@ serve(async (req) => {
     }
 
     if (allItemIds.length === 0) {
-      return new Response(`Nenhum anúncio encontrado.`, { status: 200 })
+      return Response.json({ ok: true, anunciosSalvos: 0 }, { headers })
     }
 
     let anunciosSalvos  = 0
@@ -89,13 +106,14 @@ serve(async (req) => {
       const chunk        = allItemIds.slice(i, i + chunkSize)
       const idsParaBuscar = chunk.join(',')
 
-      const itemsUrl = `https://api.mercadolibre.com/items?ids=${idsParaBuscar}&attributes=id,title,price,status,available_quantity,secure_thumbnail,pictures,attributes`
+      const itemsUrl = `https://api.mercadolibre.com/items?ids=${idsParaBuscar}&attributes=id,seller_id,title,price,status,available_quantity,secure_thumbnail,pictures,attributes`
       const itemsRes  = await fetch(itemsUrl, { headers: { Authorization: `Bearer ${token}` } })
+      if (!itemsRes.ok) return fail(502, 'Falha ao importar detalhes dos anúncios.')
       const itemsData = await itemsRes.json()
 
       for (const itemObj of itemsData) {
-        if (itemObj.code !== 200) continue
         const item = itemObj.body
+        if (itemObj.code !== 200 || !chunk.includes(item?.id) || String(item.seller_id) !== sellerId) continue
 
         const primeiraPicture = Array.isArray(item.pictures) && item.pictures.length > 0
           ? item.pictures[0]
@@ -174,6 +192,8 @@ serve(async (req) => {
       }
     }
 
+    if (!serviceCaller) return Response.json({ ok: true, anunciosSalvos, produtosCriados, linksCriados }, { headers })
+
     const htmlSucesso = `
       <html lang="pt-BR">
         <meta charset="UTF-8">
@@ -191,9 +211,9 @@ serve(async (req) => {
         </body>
       </html>
     `
-    return new Response(htmlSucesso, { headers: { "Content-Type": "text/html; charset=utf-8" } })
+    return new Response(htmlSucesso, { headers: { ...headers, "Content-Type": "text/html; charset=utf-8" } })
 
-  } catch (err: any) {
-    return new Response(`Erro de Execução: ${err.message}`, { status: 500 })
+  } catch {
+    return fail(500, 'Falha ao sincronizar anúncios.')
   }
 })
