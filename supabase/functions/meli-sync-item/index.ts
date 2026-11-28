@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.0";
 import { loadMeliCredentials, refreshMeliCredentials } from "../_shared/meli-credentials.ts";
+import { marketplaceSkus } from "../_shared/meli-listing-skus.ts";
 
 serve(async (req) => {
   if (req.method !== "POST") return new Response("Apenas POST permitido", { status: 405 });
@@ -21,7 +22,7 @@ serve(async (req) => {
     const privateCredentials = Deno.env.get("MELI_PRIVATE_CREDENTIALS_ENABLED") === "true";
     const { data: conta, error: contaError } = await supabase
       .from("meli_contas")
-      .select("id,seller_id_meli")
+      .select("id,seller_id_meli,revisar_vinculos")
       .eq("seller_id_meli", String(user_id ?? ""))
       .single();
     if (contaError || !conta) return new Response(JSON.stringify({ error: "seller_not_found" }), { status: 404, headers: { "Content-Type": "application/json" } });
@@ -52,9 +53,14 @@ serve(async (req) => {
       titulo_anuncio: item.title,
       foto_url: foto,
       preco: item.price,
-      status: item.status
+      status: item.status,
+      ...marketplaceSkus(item)
     }, { onConflict: "item_id_meli" }).select("id").single();
     if (anuncioError || !anuncio) throw new Error("anuncio_upsert_failed");
+
+    if (conta.revisar_vinculos) {
+      return Response.json({ ok: true, item_id: item.id, anuncio_salvo: true, status: "revisar_vinculo" });
+    }
 
     const skuAttr = item.attributes?.find((a: any) => a.id === "SELLER_SKU");
     const sku = typeof skuAttr?.value_name === "string" ? skuAttr.value_name.trim() : "";

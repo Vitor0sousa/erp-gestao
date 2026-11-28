@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.0"
 import { loadMeliCredentials, refreshMeliCredentials } from "../_shared/meli-credentials.ts";
+import { marketplaceSkus } from '../_shared/meli-listing-skus.ts'
 
 async function fetchItemDetails(url: string, token: string): Promise<Response> {
   const headers = { Authorization: `Bearer ${token}` }
@@ -53,7 +54,7 @@ serve(async (req) => {
     if (accountId !== null && !/^[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}$/i.test(accountId)) {
       return fail(400, 'Conta de sincronização inválida.')
     }
-    const accounts = supabase.from("meli_contas").select("id,seller_id_meli")
+    const accounts = supabase.from("meli_contas").select("id,seller_id_meli,revisar_vinculos")
     const { data: candidates, error: accountError } = accountId
       ? await accounts.eq("id", accountId)
       : await accounts.limit(2)
@@ -153,6 +154,8 @@ serve(async (req) => {
 
         if (!fotoUrl) semFoto++
 
+        const skus = marketplaceSkus(item)
+
         const { data: anuncio, error: upsertAnuncioErr } = await supabase
           .from('meli_anuncios')
           .upsert({
@@ -161,13 +164,16 @@ serve(async (req) => {
             titulo_anuncio: item.title,
             foto_url:       fotoUrl,
             preco:          item.price,
-            status:         item.status
+            status:         item.status,
+            ...skus
           }, { onConflict: 'item_id_meli' })
           .select('id')
           .single()
 
         if (upsertAnuncioErr || !anuncio) continue
         anunciosSalvos++
+
+        if (conta.revisar_vinculos) continue
 
         const skuAttr = item.attributes?.find((a: any) => a.id === 'SELLER_SKU')
         const skuMeli = skuAttr ? skuAttr.value_name : null

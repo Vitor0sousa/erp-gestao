@@ -114,7 +114,7 @@ async function processarNotificacao(body: any) {
 
   const { data: conta, error: contaError } = await supabase
     .from('meli_contas')
-    .select('id, seller_id_meli')
+    .select('id, seller_id_meli, revisar_vinculos')
     .eq('seller_id_meli', user_id.toString())
     .single()
 
@@ -268,7 +268,7 @@ async function buscarCustoFrete(shippingId: number | string, token: string): Pro
 // =========================================================================
 async function processarPedido(
   supabase: SupabaseClient,
-  conta: { id: string; seller_id_meli: string },
+  conta: { id: string; seller_id_meli: string; revisar_vinculos: boolean },
   resource: string,
   credentials: { access_token: string; refresh_token: string },
   privateMode: boolean,
@@ -354,7 +354,7 @@ async function processarPedido(
     return
   }
 
-  if (!orderData.order_items || !Array.isArray(orderData.order_items)) return
+  if (!Array.isArray(orderData.order_items) || (conta.revisar_vinculos && orderData.status !== 'paid')) return
 
   for (const orderItem of orderData.order_items) {
     const itemIdMeli = orderItem.item?.id
@@ -371,8 +371,11 @@ async function processarPedido(
 
     if (!anuncio) continue
 
-    const { data: ligacao } = await supabase.from('anuncio_skus')
-      .select('id, produto_interno_id').eq('anuncio_id', anuncio.id).single()
+    const links = supabase.from('anuncio_skus').select('id, produto_interno_id').eq('anuncio_id', anuncio.id)
+    const variation = orderItem.item?.variation_id
+    const filter = !conta.revisar_vinculos ? links : variation == null
+      ? links.is('variacao_id_meli', null) : links.eq('variacao_id_meli', String(variation))
+    const { data: ligacao } = await filter.single()
     if (!ligacao || !ligacao.produto_interno_id) continue
 
     const { error: insertError } = await supabase.from('itens_pedido').insert({
