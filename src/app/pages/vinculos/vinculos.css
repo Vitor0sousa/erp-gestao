@@ -1,0 +1,23 @@
+.painel { max-width: 1180px; margin: 0 auto; padding: 1.5rem; color: #17253a; }
+h1 { margin: 0 0 .25rem; font-size: 1.65rem; }
+p { margin: .3rem 0; }
+.filtros { display: flex; align-items: end; flex-wrap: wrap; gap: .85rem; margin: 1.25rem 0; }
+label { display: grid; gap: .3rem; font-weight: 600; font-size: .88rem; min-width: 0; }
+.filtros label:not(.opcao) { flex: 1 1 230px; }
+.opcao { display: flex; align-items: center; min-height: 2.4rem; }
+select, input[type='search'], button { font: inherit; border: 1px solid #c7d0df; border-radius: .5rem; padding: .55rem .7rem; }
+select, input[type='search'] { width: 100%; box-sizing: border-box; color: #17253a; background: #fff; }
+button { background: #2259aa; color: #fff; border-color: #2259aa; cursor: pointer; font-weight: 600; }
+button:disabled { opacity: .55; cursor: default; }
+.secundario { background: #fff; color: #2259aa; }
+.resultados { display: grid; gap: .55rem; margin-top: .65rem; }
+.linha { display: grid; grid-template-columns: minmax(0, 1fr) minmax(220px, .8fr); gap: 1rem; border: 1px solid #dce4ef; border-radius: .65rem; background: #fff; padding: .85rem; }
+.linha h2 { font-size: 1rem; margin: 0; }
+.linha p, .contagem { color: #475569; font-size: .88rem; }
+.acao { min-width: 0; display: grid; align-content: center; justify-items: start; gap: .45rem; }
+.acao label { width: 100%; }
+.botoes { display: flex; flex-wrap: wrap; gap: .5rem; }
+.erro, .sucesso { padding: .55rem; border-radius: .4rem; }
+.erro { background: #fef2f2; color: #922525; }
+.sucesso { background: #ecfdf3; color: #195b33; }
+@media (max-width: 650px) { .painel { padding: .7rem; } .linha { grid-template-columns: 1fr; } }

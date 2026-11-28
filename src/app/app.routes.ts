@@ -21,8 +21,17 @@ export const routes: Routes = [
     children: [
       { path: 'dashboard', component: DashboardComponent },
       { path: 'anuncios',  component: AnunciosComponent  },
+      {
+        path: 'vinculos',
+        loadComponent: () => import('./pages/vinculos/vinculos').then(module => module.VinculosComponent),
+      },
       {path: 'assitente', component:AssistenteIaComponent},
       { path: 'financeiro', component: DashboardFinanceiroComponent },
+      {
+        path: 'integracoes',
+        loadComponent: () => import('./pages/integracoes/integracoes')
+          .then(module => module.IntegracoesComponent),
+      },
       { path: 'calculadora', component: CalculadoraPrecosComponent }
 
     ]

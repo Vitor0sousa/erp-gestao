@@ -67,6 +67,17 @@
       }
     </a>
 
+    <a routerLink="/integracoes" routerLinkActive="active" ariaCurrentWhenActive="page"
+      class="nav-item" aria-label="Integrações" [title]="recolhido() ? 'Integrações' : ''">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+          d="M8 3v5m8-5v5M6 8h12v3a6 6 0 01-6 6m0 0a6 6 0 01-6-6V8m6 9v4"/>
+      </svg>
+      @if (!recolhido()) {
+        <span>Integrações</span>
+      }
+    </a>
+
      <a routerLink="/assitente" routerLinkActive="active" class="nav-item" [title]="recolhido() ? 'Assistente IA' : ''" style="color: #c4b5fd;">
       <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 

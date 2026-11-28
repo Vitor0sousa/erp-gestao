@@ -1,0 +1,69 @@
+<section class="painel">
+  <header>
+    <h1>Vínculos do Mercado Livre</h1>
+    <p>Associe cada anúncio ou variação ao produto que controla seu estoque no ERP.</p>
+  </header>
+
+  <div class="filtros">
+    <label>Loja
+      <select [ngModel]="conta()" (ngModelChange)="selecionarConta($event)" [disabled]="carregando() || salvando()">
+        <option value="">Selecione a loja</option>
+        @for (loja of contas(); track loja.id) {
+          <option [value]="loja.id">{{ loja.nome_conta }} ({{ loja.seller_id_meli }})</option>
+        }
+      </select>
+    </label>
+    <label>Buscar anúncio
+      <input type="search" [ngModel]="filtro()" (ngModelChange)="filtro.set($event)" placeholder="Nome, código ou SKU do anúncio">
+    </label>
+    <label class="opcao"><input type="checkbox" [ngModel]="somentePendentes()" (ngModelChange)="somentePendentes.set($event)"> Somente pendentes</label>
+  </div>
+
+  @if (erro()) { <p class="erro" role="alert">{{ erro() }}</p> }
+  @if (sucesso()) { <p class="sucesso" role="status">{{ sucesso() }}</p> }
+
+  @if (carregando()) {
+    <p role="status">Carregando vínculos…</p>
+  } @else if (conta()) {
+    <p class="contagem">{{ pendentes() }} vínculos pendentes</p>
+    <div class="resultados">
+      @for (linha of linhasVisiveis(); track linha.chave) {
+        <article class="linha">
+          <div>
+            <h2>{{ linha.anuncio.titulo_anuncio }}</h2>
+            <p>{{ linha.anuncio.item_id_meli }} @if (linha.variacao; as variacao) { · {{ variacao.nome || 'Variação ' + variacao.id }} }</p>
+            <p>SKU do anúncio: {{ linha.sku || 'Não informado' }}</p>
+          </div>
+          <div class="acao">
+            @if (linha.vinculos.length > 1) {
+              <p>Vínculos múltiplos. Requer revisão manual.</p>
+            } @else if (chaveEmEdicao() === linha.chave) {
+              <label>Buscar produto interno
+                <input type="search" [ngModel]="buscaProduto()" (ngModelChange)="buscaProduto.set($event)" placeholder="Nome ou SKU interno">
+              </label>
+              <label>Produto interno
+                <select [ngModel]="produtoSelecionado()" (ngModelChange)="produtoSelecionado.set($event)" [disabled]="salvando()">
+                  <option value="">Selecione o produto</option>
+                  @for (produto of opcoesProduto(); track produto.id) {
+                    <option [value]="produto.id">{{ produto.sku_interno }} · {{ produto.nome_produto }}{{ produto.tipo === 'KIT' ? ' (kit)' : '' }}</option>
+                  }
+                </select>
+              </label>
+              <div class="botoes">
+                <button class="secundario" type="button" (click)="chaveEmEdicao.set('')" [disabled]="salvando()">Cancelar</button>
+                <button type="button" (click)="salvar(linha)" [disabled]="salvando() || !produtoSelecionado()">Salvar vínculo</button>
+              </div>
+            } @else {
+              @if (linha.vinculos[0]; as vinculo) {
+                <p>SKU interno: {{ produtosPorId().get(vinculo.produto_interno_id)?.sku_interno || 'Produto vinculado' }}</p>
+              }
+              <button type="button" (click)="editar(linha)" [disabled]="salvando()">{{ linha.vinculos.length ? 'Corrigir vínculo' : 'Vincular produto' }}</button>
+            }
+          </div>
+        </article>
+      } @empty {
+        <p>{{ anuncios().length ? 'Nenhum vínculo corresponde aos filtros.' : 'Esta loja ainda não tem anúncios importados.' }}</p>
+      }
+    </div>
+  }
+</section>
