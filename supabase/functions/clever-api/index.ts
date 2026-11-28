@@ -120,11 +120,13 @@ serve(async (req) => {
 
     // ── 4. Processamento em lotes de 20 (limite da API de multiget do ML) ──
     const chunkSize = 20
+    const fields = ['id', 'seller_id', 'title', 'price', 'status', 'available_quantity', 'secure_thumbnail', 'pictures', 'attributes']
+      .map(field => `body.${field}`).join(',')
     for (let i = 0; i < allItemIds.length; i += chunkSize) {
       const chunk        = allItemIds.slice(i, i + chunkSize)
       const idsParaBuscar = chunk.join(',')
 
-      const itemsUrl = `https://api.mercadolibre.com/items?ids=${idsParaBuscar}&attributes=id,seller_id,title,price,status,available_quantity,secure_thumbnail,pictures,attributes`
+      const itemsUrl = `https://api.mercadolibre.com/items/bulk?ids=${idsParaBuscar}&attributes=${fields}`
       const itemsRes = await fetchItemDetails(itemsUrl, token)
       if (!itemsRes.ok) {
         console.warn('meli_listing_details_failed', { status: itemsRes.status, offset: i })
@@ -135,7 +137,8 @@ serve(async (req) => {
 
       for (const itemObj of itemsData) {
         const item = itemObj.body
-        if (itemObj.code !== 200 || !chunk.includes(item?.id) || String(item.seller_id) !== sellerId) continue
+        if (itemObj.status_code !== 200 || !chunk.includes(itemObj.id)
+          || item?.id !== itemObj.id || String(item.seller_id) !== sellerId) continue
 
         const primeiraPicture = Array.isArray(item.pictures) && item.pictures.length > 0
           ? item.pictures[0]
