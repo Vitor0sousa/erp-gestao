@@ -117,16 +117,15 @@ serve(async (req) => {
     let produtosCriados = 0
     let linksCriados    = 0
     let semFoto         = 0
+    let detalhesValidos = 0
 
     // ── 4. Processamento em lotes de 20 (limite da API de multiget do ML) ──
     const chunkSize = 20
-    const fields = ['id', 'seller_id', 'title', 'price', 'status', 'available_quantity', 'secure_thumbnail', 'pictures', 'attributes']
-      .map(field => `body.${field}`).join(',')
     for (let i = 0; i < allItemIds.length; i += chunkSize) {
       const chunk        = allItemIds.slice(i, i + chunkSize)
       const idsParaBuscar = chunk.join(',')
 
-      const itemsUrl = `https://api.mercadolibre.com/items/bulk?ids=${idsParaBuscar}&attributes=${fields}`
+      const itemsUrl = `https://api.mercadolibre.com/items/bulk?ids=${idsParaBuscar}`
       const itemsRes = await fetchItemDetails(itemsUrl, token)
       if (!itemsRes.ok) {
         console.warn('meli_listing_details_failed', { status: itemsRes.status, offset: i })
@@ -134,11 +133,13 @@ serve(async (req) => {
         return fail(502, 'Falha ao importar detalhes dos anúncios.')
       }
       const itemsData = await itemsRes.json()
+      if (!Array.isArray(itemsData)) return fail(502, 'Formato inesperado nos detalhes dos anúncios.')
 
       for (const itemObj of itemsData) {
-        const item = itemObj.body
-        if (itemObj.status_code !== 200 || !chunk.includes(itemObj.id)
-          || item?.id !== itemObj.id || String(item.seller_id) !== sellerId) continue
+        const item = itemObj?.body
+        if (itemObj?.status_code !== 200 || !chunk.includes(item?.id)
+          || (itemObj.id != null && itemObj.id !== item.id) || String(item.seller_id) !== sellerId) continue
+        detalhesValidos++
 
         const primeiraPicture = Array.isArray(item.pictures) && item.pictures.length > 0
           ? item.pictures[0]
@@ -217,6 +218,8 @@ serve(async (req) => {
       }
     }
 
+    console.info('meli_listing_sync_summary', { requested: allItemIds.length, valid: detalhesValidos, saved: anunciosSalvos })
+    if (anunciosSalvos === 0) return fail(502, 'Nenhum dos anúncios consultados pôde ser atualizado.')
     if (!serviceCaller) return Response.json({ ok: true, anunciosSalvos, produtosCriados, linksCriados }, { headers })
 
     const htmlSucesso = `
