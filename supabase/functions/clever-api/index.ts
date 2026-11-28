@@ -2,6 +2,24 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.0"
 import { loadMeliCredentials, refreshMeliCredentials } from "../_shared/meli-credentials.ts";
 
+async function fetchItemDetails(url: string, token: string): Promise<Response> {
+  const headers = { Authorization: `Bearer ${token}` }
+  let response = await fetch(url, { headers })
+  for (const backoffMs of [1000, 2500]) {
+    if (![429, 500, 502, 503, 504].includes(response.status)) break
+    const retryAfter = response.headers.get('Retry-After')
+    const requestedDelay = retryAfter === null ? 0 : /^\d+$/.test(retryAfter)
+      ? Number(retryAfter) * 1000
+      : Math.max(0, Date.parse(retryAfter) - Date.now())
+    if (requestedDelay > 8000) break
+    await response.body?.cancel()
+    const delay = Math.max(backoffMs, requestedDelay || 0) + Math.floor(Math.random() * 250)
+    await new Promise(resolve => setTimeout(resolve, delay))
+    response = await fetch(url, { headers })
+  }
+  return response
+}
+
 serve(async (req) => {
   const headers = {
     'Access-Control-Allow-Origin': '*',
@@ -107,8 +125,12 @@ serve(async (req) => {
       const idsParaBuscar = chunk.join(',')
 
       const itemsUrl = `https://api.mercadolibre.com/items?ids=${idsParaBuscar}&attributes=id,seller_id,title,price,status,available_quantity,secure_thumbnail,pictures,attributes`
-      const itemsRes  = await fetch(itemsUrl, { headers: { Authorization: `Bearer ${token}` } })
-      if (!itemsRes.ok) return fail(502, 'Falha ao importar detalhes dos anúncios.')
+      const itemsRes = await fetchItemDetails(itemsUrl, token)
+      if (!itemsRes.ok) {
+        console.warn('meli_listing_details_failed', { status: itemsRes.status, offset: i })
+        if (itemsRes.status === 429) return fail(429, 'O Mercado Livre limitou a consulta. Tente novamente em alguns instantes.')
+        return fail(502, 'Falha ao importar detalhes dos anúncios.')
+      }
       const itemsData = await itemsRes.json()
 
       for (const itemObj of itemsData) {
